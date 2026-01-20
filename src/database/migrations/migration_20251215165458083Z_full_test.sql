@@ -1,0 +1,2 @@
+-- Full migration log for test 
+-- Created at 2025-12-15T16:54:58.089Z

@@ -86,9 +86,18 @@
 
       /* Estilos para dispositivos móviles */
       @media screen and (max-width: 600px) {
+        /* Contenedor principal */
         .email-container {
           width: 100% !important;
         }
+        
+        .container {
+          width: 100% !important;
+          max-width: 100% !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Columnas apilables */
         .stack-column,
         .stack-column-center {
           display: block !important;
@@ -96,14 +105,60 @@
           max-width: 100% !important;
           direction: ltr !important;
         }
+        
         .stack-column-center {
           text-align: center !important;
         }
+        
         .center-on-mobile {
           text-align: center !important;
           display: block !important;
           margin-left: auto !important;
           margin-right: auto !important;
+        }
+        
+        /* Ajustes de padding para móvil */
+        .mobile-padding {
+          padding: 15px !important;
+        }
+        
+        /* Títulos y texto */
+        h1 {
+          font-size: 20px !important;
+          line-height: 28px !important;
+        }
+        
+        h2 {
+          font-size: 16px !important;
+          line-height: 22px !important;
+        }
+        
+        p {
+          font-size: 14px !important;
+          line-height: 20px !important;
+        }
+        
+        /* Botones más grandes para touch */
+        a[style*="padding: 12px 24px"] {
+          padding: 14px 28px !important;
+          font-size: 16px !important;
+          display: block !important;
+          width: 90% !important;
+          margin: 0 auto !important;
+        }
+        
+        /* Tablas de contenido */
+        table[role="presentation"] {
+          width: 100% !important;
+        }
+        
+        /* Reducir padding en celdas */
+        td[style*="padding: 20px 30px"] {
+          padding: 15px 20px !important;
+        }
+        
+        td[style*="padding: 25px 30px"] {
+          padding: 20px 15px !important;
         }
       }
     </style>
@@ -223,14 +278,12 @@
                           font-size: 16px;
                           line-height: 24px;
                           font-family: 'Segoe UI', Arial, sans-serif;
-                          color: #FFFFFF;
+                          color: #ffffff;
                         "
                       >
                         Por este medio se adjunta tu boleta de pago electrónica
                         correspondiente al mes de
-                        <span class="primary-color"
-                          >{{month.toUpperCase()}} {{year}}</span
-                        >
+                        <span class="primary-color">{{month}} {{year}}</span>
                         efectuado por la entidad patronal CELLUS S.A
                       </p>
                     </td>
@@ -241,7 +294,7 @@
                     <td style="padding: 0 0 10px 0">
                       <div
                         style="
-                          background-color: #1F2021;
+                          background-color: #1f2021;
                           border: 1px solid #e5e5e5;
                           border-radius: 6px;
                           padding: 20px;
@@ -250,11 +303,11 @@
                       >
                         <h2
                           style="
-                            background-color: #393A3C;
+                            background-color: #393a3c;
                             padding: 10px;
                             margin: 0 0 15px 0;
                             font-size: 18px;
-                            color: #FFFFFF;
+                            color: #ffffff;
                             font-family: 'Segoe UI', Arial, sans-serif;
                             text-align: center;
                           "
@@ -267,11 +320,12 @@
                             font-size: 16px;
                             line-height: 24px;
                             font-family: 'Segoe UI', Arial, sans-serif;
-                            color: #FFFFFF;
+                            color: #ffffff;
                             text-align: center;
                           "
                         >
-                          Por favor de firmar su boleta presionando el siguiente enlace:
+                          Por favor de firmar su boleta presionando el siguiente
+                          enlace:
                         </p>
                         <!-- Botón de Firma -->
                         <table
@@ -287,9 +341,7 @@
                           <tr>
                             <td align="center">
                               <a
-                                href="${
-                                  process.env.DOMAIN
-                                }/payments/${paymentIndicator}/${uiAuthorization}"
+                                href="{{domain}}"
                                 target="_blank"
                                 style="
                                   display: inline-block;
@@ -317,23 +369,27 @@
 
                   <!-- Información de Contacto -->
                   <tr>
-                    <td style="padding: 0 0 5px 0; color: #FFFFFF;">
+                    <td style="padding: 0 0 5px 0; color: #ffffff">
                       <p
                         style="
                           margin: 0 0 10px 0;
                           font-size: 16px;
                           line-height: 24px;
                           font-family: 'Segoe UI', Arial, sans-serif;
-                          color: #FFFFFF;
+                          color: #ffffff;
                           text-align: center;
                         "
                       >
                         En caso de tener alguna inconformidad con su pago, por
                         favor de comunicarse al área de Recursos Humanos al
                         correo
-                        <span style="font-weight: 700; color: #f97316">test@ejemplo.com</span>
+                        <span style="font-weight: 700; color: #f97316"
+                          >maju@cellus.com.gt</span
+                        >
                         o vía telefónica al número
-                        <span style="font-weight: 700; color: #f97316">2314-000</span>
+                        <span style="font-weight: 700; color: #f97316"
+                          >2314-000</span
+                        >
                         para proceder con la respectiva revisión de su
                         inconformidad.
                       </p>
@@ -342,14 +398,14 @@
 
                   <!-- Cierre -->
                   <tr>
-                    <td style="color: #FFFFFF; text-align: center">
+                    <td style="color: #ffffff; text-align: center">
                       <p
                         style="
                           margin: 0 0 15px 0;
                           font-size: 16px;
                           line-height: 24px;
                           font-family: 'Segoe UI', Arial, sans-serif;
-                          color: #FFFFFF;
+                          color: #ffffff;
                         "
                       >
                         Atentamente

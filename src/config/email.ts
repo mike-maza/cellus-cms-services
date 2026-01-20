@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import type { Options } from 'nodemailer/lib/mailer'
 
 /**
  * Crea y configura un transporter de Nodemailer con opciones optimizadas para evitar spam
@@ -6,22 +7,24 @@ import nodemailer from 'nodemailer'
  */
 export const transporter = () => {
   return nodemailer.createTransport({
-    host: process.env.EMAIL_HOST,
-    port: Number(process.env.EMAIL_PORT),
+    // host: process.env.EMAIL_HOST,
+    host: 'smtp.mail.yahoo.com',
+    // port: Number(process.env.EMAIL_PORT),
+    port: 465,
     secure: true, // true para puerto 465, false para otros puertos
     auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASSWORD
+      user: process.env.WELCOME_AND_FORGOT_PASSWORD_EMAIL,
+      pass: process.env.WELCOME_AND_FORGOT_PASSWORD_PASSWORD
     },
     // Opciones adicionales para mejorar la entrega
     pool: true, // Usar conexiones persistentes
-    maxConnections: 5, // Limitar conexiones simultáneas
-    maxMessages: 100, // Limitar mensajes por conexión
-    rateDelta: 1000, // Tiempo entre envíos en ms
-    rateLimit: 5, // Número máximo de mensajes por rateDelta
+    // maxConnections: 5, // Limitar conexiones simultáneas
+    // maxMessages: 100, // Limitar mensajes por conexión
+    // rateDelta: 1000, // Tiempo entre envíos en ms
+    // rateLimit: 5, // Número máximo de mensajes por rateDelta
     // Opciones TLS
     tls: {
-      rejectUnauthorized: true // Verificar certificado del servidor
+      rejectUnauthorized: false // Verificar certificado del servidor
     }
     // Opciones DKIM (requiere configuración adicional)
     // dkim: {
@@ -49,13 +52,12 @@ export const transporterEmail = (
     filename: string
     path: string
   }[]
-) => {
-  return {
+): Options => {
+  const mail: Options = {
     from,
     to,
     subject,
     html,
-    attachments: attachments || null,
     // Opciones adicionales para mejorar la entrega
     headers: {
       'X-Priority': '1', // Prioridad alta
@@ -66,4 +68,11 @@ export const transporterEmail = (
     // Versión en texto plano (recomendado para evitar spam)
     text: html.replace(/<[^>]*>/g, '') // Elimina etiquetas HTML
   }
+
+  // Asignar adjuntos solo si existen, para cumplir con tipos de Nodemailer
+  if (attachments && attachments.length > 0) {
+    mail.attachments = attachments
+  }
+
+  return mail
 }
