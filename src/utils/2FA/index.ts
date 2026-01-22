@@ -1,6 +1,5 @@
 import { Totp } from 'time2fa'
 import * as qrcode from 'qrcode'
-import * as crypto from 'crypto'
 
 // DB Imports
 import {
@@ -8,6 +7,8 @@ import {
   insertedSecretCode2FA,
   updatedUser
 } from '~/database/2FADB'
+
+import { advancedEncryptionService } from '~/config/encryption'
 
 import {
   RESPONSE_CODE_FAIL,
@@ -19,36 +20,6 @@ import {
 } from '~/constants/RESPONSE_MESSAGE'
 
 export class TwoFactorAuth {
-  private static readonly ALGORITHM = 'aes-256-cbc'
-  private static readonly ENCRYPTION_KEY =
-    process.env.TWO_FACTOR_ENCRYPTION_KEY || 'default_key_must_be_32_bytes_len'
-  private static readonly IV_LENGTH = 16
-
-  /**
-   * Helper: Encrypt text
-   */
-  private static encrypt(text: string): Buffer {
-    const iv = crypto.randomBytes(this.IV_LENGTH)
-    const key = crypto.scryptSync(this.ENCRYPTION_KEY, 'salt', 32)
-    const cipher = crypto.createCipheriv(this.ALGORITHM, key, iv)
-    let encrypted = cipher.update(text)
-    encrypted = Buffer.concat([encrypted, cipher.final()])
-    return Buffer.concat([iv, encrypted])
-  }
-
-  /**
-   * Helper: Decrypt data
-   */
-  private static decrypt(encryptedData: Buffer): string {
-    const iv = encryptedData.subarray(0, this.IV_LENGTH)
-    const encryptedText = encryptedData.subarray(this.IV_LENGTH)
-    const key = crypto.scryptSync(this.ENCRYPTION_KEY, 'salt', 32)
-    const decipher = crypto.createDecipheriv(this.ALGORITHM, key, iv)
-    let decrypted = decipher.update(encryptedText)
-    decrypted = Buffer.concat([decrypted, decipher.final()])
-    return decrypted.toString()
-  }
-
   /**
    * Generate 2FA Secret and QR Code
    * @param user Username or identifier
@@ -111,7 +82,15 @@ export class TwoFactorAuth {
           return
         }
 
-        secretCodeVerify = this.decrypt(record.EncryptedSecret)
+        try {
+          secretCodeVerify = advancedEncryptionService.decryptFromBuffer(
+            record.EncryptedSecret
+          )
+        } catch (error) {
+          secretCodeVerify = advancedEncryptionService.decryptTwoFactorLegacy(
+            record.EncryptedSecret
+          )
+        }
       }
 
       const isValid = Totp.validate({
@@ -121,7 +100,8 @@ export class TwoFactorAuth {
 
       if (isValid) {
         if (register) {
-          const encryptedSecret = this.encrypt(secretCodeVerify)
+          const encryptedSecret =
+            advancedEncryptionService.encryptToBuffer(secretCodeVerify)
 
           await insertedSecretCode2FA({
             UserID: idUser,
