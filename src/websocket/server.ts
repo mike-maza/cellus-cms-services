@@ -401,6 +401,7 @@ export function initWebSocketServer(
               ip: clientIp,
               userAgent
             })
+
             auditLogger.log(auditEntry)
             return
           }
@@ -409,6 +410,9 @@ export function initWebSocketServer(
           const sheetId = typeof p.sheetId === 'string' ? p.sheetId : ''
           const sheetName = typeof p.sheetName === 'string' ? p.sheetName : ''
           const actor = user.email || user.sub || 'unknown'
+          let sentInBatch = 0
+          const BATCH_SIZE = 5
+          const BATCH_WAIT_TIME = 5 * 60 * 1000 // 5 minutes
 
           if (!sheetId || !sheetName) {
             ws.send(
@@ -436,6 +440,8 @@ export function initWebSocketServer(
           }
 
           try {
+            let bgProcessId: string | undefined
+
             // Emitir progreso en tiempo real mientras se procesa
             const result = await googleSheetsClients(
               sheetId,
@@ -443,22 +449,104 @@ export function initWebSocketServer(
               actor,
               async (evt: any) => {
                 try {
+                  if (evt.type === 'started') {
+                    const total = evt.data?.totalRows || 0
+                    const bgProcess = processManager.startProcess(
+                      'Sincronización de Empleados',
+                      user,
+                      total
+                    )
+                    bgProcessId = bgProcess.id
+                    broadcastProcessUpdate(bgProcess)
+                  }
+
+                  if (bgProcessId) {
+                    if (evt.type === 'created' || evt.type === 'updated') {
+                      processManager.updateProgress(
+                        bgProcessId,
+                        evt.rowNumber - 1,
+                        evt.message
+                      )
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    } else if (evt.type === 'provider_warning') {
+                      processManager.addLog(bgProcessId, evt.message, 'info')
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    } else if (evt.type === 'error') {
+                      processManager.addLog(bgProcessId, evt.message, 'error')
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    } else if (evt.type === 'no_email') {
+                      processManager.updateProgress(
+                        bgProcessId,
+                        evt.rowNumber - 1
+                      )
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    }
+                  }
                   // Si se crea un usuario, enviar correo de bienvenida
-                  if (evt.type === 'created' && evt.email) {
+                  if (
+                    evt.type === 'created' &&
+                    evt.email &&
+                    evt.data?.isNew === true
+                  ) {
                     const username = evt.data?.username || 'Usuario'
                     const fullName = evt.data?.fullName || 'Usuario'
                     const password = evt.data?.password || 'Temp123*'
                     const contact = evt.email
-                    console.log(`📧 Enviando bienvenida a ${contact}`)
+                    // console.log(`📧 Enviando bienvenida a ${contact}`)
 
                     // Enviar correo de forma asíncrona dentro del callback
-                    sendWelcomeEmail(
+                    await sendWelcomeEmail(
                       username,
                       contact,
                       fullName,
                       password,
                       process.env.DOMAIN || 'https://cellus-cms.cellus.com.gt'
                     ).catch(console.error)
+
+                    sentInBatch++
+                    console.log(
+                      `[Yahoo/Spam Limit] Action: googleSheetsClients | Count: ${sentInBatch}/${BATCH_SIZE}`
+                    )
+
+                    if (sentInBatch >= BATCH_SIZE) {
+                      const waitMinutes = BATCH_WAIT_TIME / 60000
+                      const waitMessage = `⏳ Límite de batch alcanzado (${BATCH_SIZE} correos). Esperando ${waitMinutes} minutos para evitar bloqueos (Yahoo/Spam)...`
+                      console.log(`[Yahoo/Spam Limit] ${waitMessage}`)
+
+                      if (bgProcessId) {
+                        processManager.addLog(bgProcessId, waitMessage, 'info')
+                        broadcastProcessUpdate(
+                          processManager.getProcess(bgProcessId)!
+                        )
+                      }
+
+                      ws.send(
+                        JSON.stringify({
+                          ok: true,
+                          action,
+                          progress: {
+                            type: 'info',
+                            message: waitMessage
+                          }
+                        })
+                      )
+
+                      await new Promise(resolve =>
+                        setTimeout(resolve, BATCH_WAIT_TIME)
+                      )
+                      sentInBatch = 0 // Reset counter after waiting
+                      console.log(
+                        `[Yahoo/Spam Limit] Wait finished. Resuming...`
+                      )
+                    }
 
                     await new Promise(r => setTimeout(r, 50))
                   }
@@ -467,6 +555,11 @@ export function initWebSocketServer(
                 } catch (_) {}
               }
             )
+
+            if (bgProcessId) {
+              processManager.finishProcess(bgProcessId, 'completed')
+              broadcastProcessUpdate(processManager.getProcess(bgProcessId)!)
+            }
             // Enviar resultado final
             try {
               ws.send(JSON.stringify({ ok: true, action, result }))
@@ -539,17 +632,53 @@ export function initWebSocketServer(
           }
 
           try {
+            let bgProcessId: string | undefined
+
             // Enviar resultado final
             const result = await googleSheetsPayments(
               sheetId,
               sheetName,
               actor,
-              (evt: any) => {
+              async (evt: any) => {
                 try {
+                  if (evt.type === 'started') {
+                    const total = evt.data?.totalRows || 0
+                    const bgProcess = processManager.startProcess(
+                      'Sincronización de Pagos',
+                      user,
+                      total
+                    )
+                    bgProcessId = bgProcess.id
+                    broadcastProcessUpdate(bgProcess)
+                  }
+
+                  if (bgProcessId) {
+                    if (evt.type === 'created' || evt.type === 'updated') {
+                      processManager.updateProgress(
+                        bgProcessId,
+                        evt.rowNumber - 1,
+                        evt.message
+                      )
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    } else if (evt.type === 'error') {
+                      processManager.addLog(bgProcessId, evt.message, 'error')
+                      broadcastProcessUpdate(
+                        processManager.getProcess(bgProcessId)!
+                      )
+                    }
+                  }
+
                   ws.send(JSON.stringify({ ok: true, action, progress: evt }))
                 } catch (_) {}
               }
             )
+
+            if (bgProcessId) {
+              processManager.finishProcess(bgProcessId, 'completed')
+              broadcastProcessUpdate(processManager.getProcess(bgProcessId)!)
+            }
 
             try {
               ws.send(JSON.stringify({ ok: true, action, result }))

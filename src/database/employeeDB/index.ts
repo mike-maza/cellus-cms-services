@@ -41,9 +41,11 @@ export const getEmployeeById = async (id: string) => {
 
 export const createEmployee = async (data: any) => {
   try {
-    await executeStoredProcedure(PROCEDURES.CREATE_EMPLOYEE, { params: data })
+    const result = await executeStoredProcedure(PROCEDURES.CREATE_EMPLOYEE, {
+      params: data
+    })
 
-    return 'Empleado creado correctamente'
+    return result
   } catch (error) {
     console.error(`Error al crear el empleado: ${error}`)
 

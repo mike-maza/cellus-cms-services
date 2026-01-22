@@ -1,10 +1,7 @@
 import type { Request, Response } from 'express'
 import {
-  RESPONSE_CODE_FAIL,
   RESPONSE_CODE_SUCCESS,
-  RESPONSE_MESSAGE_FAIL,
   RESPONSE_MESSAGE_SUCCESS,
-  RESPONSE_STATUS_FAIL,
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
@@ -36,6 +33,7 @@ class EmployeeController {
       PageNumber: page ? Number(page) : undefined,
       PageSize: pageSize ? Number(pageSize) : undefined
     })
+
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS

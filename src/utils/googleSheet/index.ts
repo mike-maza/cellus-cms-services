@@ -55,7 +55,7 @@ export const googleSheetsPayments = async (
   spreadsheetId: string,
   sheetName: string,
   username: string,
-  onProgress?: (evt: any) => void
+  onProgress?: (evt: any) => Promise<void> | void
 ) => {
   try {
     const range = `${sheetName.trim()}!A1:ZZ`
@@ -98,8 +98,8 @@ export const googleSheetsPayments = async (
     const searchDate = sheetName.includes('Aguinaldo')
       ? ['Diciembre', '14', String(new Date().getFullYear())]
       : sheetName.includes('Bono Productividad')
-      ? sheetName.split(' ').slice(2)
-      : sheetName.split(' ')
+        ? sheetName.split(' ').slice(2)
+        : sheetName.split(' ')
 
     // 4. Template base para pagos
     const basePayment = {
@@ -226,6 +226,12 @@ export const googleSheetsPayments = async (
     // 7. Procesar cada fila
     console.log(`⚙️ Procesando ${rows.length} filas...`)
 
+    await onProgress?.({
+      type: 'started',
+      message: 'Procesando pagos',
+      data: { sheetName, totalRows: rows.length }
+    })
+
     for (const [index, row] of rows.entries()) {
       // Crear pago actual
       const currentPayment = {
@@ -292,7 +298,7 @@ export const googleSheetsPayments = async (
             : 'Boleta creada exitosamente'
         const type = result.status === 'existing' ? 'updated' : 'created'
 
-        onProgress?.({
+        await onProgress?.({
           type,
           rowNumber,
           message,
@@ -331,6 +337,11 @@ export const googleSheetsPayments = async (
   } catch (error) {
     console.error('Error al procesar la hoja de cálculo:', error)
 
+    await onProgress?.({
+      type: 'error',
+      message: error instanceof Error ? error.message : 'Error desconocido'
+    })
+
     return {
       success: false,
       message: 'Error al procesar los datos de la planilla',
@@ -350,6 +361,7 @@ type ProgressEvent = {
     | 'no_email'
     | 'finished'
     | 'error'
+    | 'provider_warning'
   message?: string
   rowNumber?: number
   email?: string
@@ -370,8 +382,8 @@ const EMPLOYEE_COLUMNS = {
   Cdr: 'CDR',
   Account: 'Cuenta',
   NoAccount: 'No. Cuenta',
-  BaseSalary: 'Salario Central',
-  // SalarioOccidente: 'Salario Occidente', // No hay campo directo en DB flat structure, concatenar si es necesario?
+  BaseSalaryCentral: 'Salario Central',
+  BaseSalaryOccidente: 'Salario Occidente',
   TotalVacations: 'Total de Vacaciones',
   VacationDeadline: 'Corte Vacaciones',
   SaturdaysAndSundays: 'Sabados y Domingos',
@@ -387,7 +399,7 @@ export const googleSheetsClients = async (
   spreadsheetId: string,
   sheetName: string,
   username: string,
-  onProgress?: (evt: ProgressEvent) => void
+  onProgress?: (evt: ProgressEvent) => Promise<void> | void
 ) => {
   try {
     const isValidEmail = (email: string) => {
@@ -505,7 +517,7 @@ export const googleSheetsClients = async (
 
     if (!sheetData || sheetData.length === 0) {
       console.log('No se encontraron datos en la hoja especificada')
-      onProgress?.({
+      await onProgress?.({
         type: 'error',
         message: 'No se encontraron datos en la hoja especificada'
       })
@@ -540,10 +552,10 @@ export const googleSheetsClients = async (
     })
 
     // Emitir evento de inicio
-    onProgress?.({
+    await onProgress?.({
       type: 'started',
       message: 'Procesando filas',
-      data: { sheetName }
+      data: { sheetName, totalRows: processedData.length }
     })
 
     const result = {
@@ -560,7 +572,12 @@ export const googleSheetsClients = async (
       }[],
       noEmails: [] as { rowNumber: number }[],
 
-      created: [] as { rowNumber: number; email?: string; fullName?: string }[]
+      created: [] as {
+        rowNumber: number
+        email?: string
+        fullName?: string
+        isNew?: boolean
+      }[]
     }
 
     const seenEmails = new Map<string, number>()
@@ -575,7 +592,7 @@ export const googleSheetsClients = async (
         // Sin correo
         if (!normalizedEmail) {
           result.noEmails.push({ rowNumber: row.rowNumber })
-          onProgress?.({ type: 'no_email', rowNumber: row.rowNumber })
+          await onProgress?.({ type: 'no_email', rowNumber: row.rowNumber })
           continue
         }
 
@@ -585,7 +602,7 @@ export const googleSheetsClients = async (
             rowNumber: row.rowNumber,
             email: normalizedEmail
           })
-          onProgress?.({
+          await onProgress?.({
             type: 'invalid_email',
             rowNumber: row.rowNumber,
             email: normalizedEmail
@@ -602,7 +619,7 @@ export const googleSheetsClients = async (
             email: normalizedEmail,
             firstRowNumber: firstRow
           })
-          onProgress?.({
+          await onProgress?.({
             type: 'duplicate_email',
             rowNumber: row.rowNumber,
             email: normalizedEmail
@@ -637,7 +654,10 @@ export const googleSheetsClients = async (
               Account: row[EMPLOYEE_COLUMNS.Account] || '',
               NoAccount: row[EMPLOYEE_COLUMNS.NoAccount] || '',
               NoAuthorization: generateUniqueId(),
-              BaseSalary: row[EMPLOYEE_COLUMNS.BaseSalary] || '',
+              BaseSalary:
+                row[EMPLOYEE_COLUMNS.BaseSalaryCentral] ||
+                row[EMPLOYEE_COLUMNS.BaseSalaryOccidente] ||
+                '',
               TotalVacations: row[EMPLOYEE_COLUMNS.TotalVacations] || '',
               SaturdaysAndSundays:
                 row[EMPLOYEE_COLUMNS.SaturdaysAndSundays] || '',
@@ -654,26 +674,32 @@ export const googleSheetsClients = async (
               CorporateNumbers: row[EMPLOYEE_COLUMNS.CorporateNumbers] || ''
             }
 
-            console.log(employeeData)
-
             // Solo intentamos crear si tenemos un código de empleado válido
             if (employeeData.CodEmployee) {
-              await createEmployee(employeeData)
+              const response = await createEmployee(employeeData)
+
+              const message = response[0]?.Mensaje
+              const isNew =
+                message &&
+                String(message).trim() === 'Empleado creado exitosamente'
 
               result.created.push({
                 rowNumber: row.rowNumber,
                 email: normalizedEmail,
-                fullName
+                fullName,
+                isNew
               })
 
-              onProgress?.({
-                type: 'created',
+              await onProgress?.({
+                type: isNew ? 'created' : 'updated',
                 rowNumber: row.rowNumber,
                 email: normalizedEmail,
+                message: message || '',
                 data: {
                   fullName,
                   username: row['Codigo de empleado'],
-                  password: generatedPassword
+                  password: generatedPassword,
+                  isNew
                 }
               })
             }
@@ -686,9 +712,15 @@ export const googleSheetsClients = async (
 
           const providerIssue = checkProviderSpelling(normalizedEmail)
           if (providerIssue) {
-            console.warn(
-              `Posible error en proveedor "${providerIssue.found}" en fila ${row.rowNumber}. ¿Quisiste decir "${providerIssue.expected}"?`
-            )
+            const warningMessage = `Posible error en proveedor "${providerIssue.found}" en fila ${row.rowNumber}. ¿Quisiste decir "${providerIssue.expected}"?`
+            console.warn(warningMessage)
+            await onProgress?.({
+              type: 'provider_warning',
+              rowNumber: row.rowNumber,
+              email: normalizedEmail,
+              message: warningMessage,
+              data: providerIssue
+            })
           }
         }
       }
@@ -696,7 +728,7 @@ export const googleSheetsClients = async (
       // Sin encabezado de correo: marcar todas como sin correo
       for (const row of processedData) {
         result.noEmails.push({ rowNumber: row.rowNumber })
-        onProgress?.({ type: 'no_email', rowNumber: row.rowNumber })
+        await onProgress?.({ type: 'no_email', rowNumber: row.rowNumber })
       }
     }
 
