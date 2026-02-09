@@ -194,11 +194,11 @@ let solicitudesAnticipos: SolicitudAnticipo[] = [
   }
 ]
 
-export const getAdvances = async () => {
+export const db_getAdvances = async () => {
   return solicitudesAnticipos
 }
 
-export const createAdvance = async (data: Omit<SolicitudAnticipo, 'id'>) => {
+export const db_createAdvance = async (data: Omit<SolicitudAnticipo, 'id'>) => {
   const newAdvance = {
     ...data,
     id: `ANT${Date.now()}`
@@ -207,7 +207,7 @@ export const createAdvance = async (data: Omit<SolicitudAnticipo, 'id'>) => {
   return newAdvance
 }
 
-export const updateAdvance = async (
+export const db_updateAdvance = async (
   id: string,
   data: Partial<SolicitudAnticipo>
 ) => {

@@ -1,11 +1,14 @@
 import { executeStoredProcedure } from '~/database/connection'
 import { PROCEDURES } from '~/database/procedures'
 
-export const getDashboardDataDB = async () => {
+export const db_getDataRelevant = async () => {
   try {
-    const response = await executeStoredProcedure(PROCEDURES.DASHBOARD_DATA)
+    const response = await executeStoredProcedure(PROCEDURES.DASHBOARD_DATA, {
+      useCache: true,
+      cacheTTL: 5 * 60 * 1000 // 5 minutos de caché
+    })
 
-    return response?.recordset
+    return response[0]
   } catch (error) {
     throw error
   }

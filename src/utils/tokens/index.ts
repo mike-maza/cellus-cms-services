@@ -25,7 +25,7 @@ export const generateUserFingerprint = (req: Request): string => {
  * @param token string
  * */
 export const verifyToken = (token: string) => {
-  return jwt.verify(token, `${process.env.JWT_SECRETO}`)
+  return jwt.verify(token, `${process.env.JWT_SECRET}`)
 }
 
 /**
@@ -39,7 +39,7 @@ export const verifyTokenWithFingerprint = (
   token: string,
   currentFingerprint: string
 ) => {
-  const payload = jwt.verify(token, `${process.env.JWT_SECRETO}`) as any
+  const payload = jwt.verify(token, `${process.env.JWT_SECRET}`) as any
 
   // Validar que el fingerprint coincida
   if (payload.fingerprint && payload.fingerprint !== currentFingerprint) {
@@ -77,7 +77,7 @@ export const accessTokenAndRefreshToken = (
   // @ts-ignore
   data.accessToken = jwt.sign(
     payload,
-    JWT_SECRET || `${process.env.JWT_SECRETO}`,
+    JWT_SECRET || `${process.env.JWT_SECRET}`,
     {
       expiresIn: JWT_TEMP_EXP || process.env.JWT_TIEMPO_EXPIRA || '30min'
     }

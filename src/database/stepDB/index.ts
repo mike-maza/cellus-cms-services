@@ -1,33 +1,40 @@
 import { executeStoredProcedure } from '~/database/connection'
 import { PROCEDURES } from '../procedures'
 
-export const getSteps = async () => {
+export const db_getStepsByUser = async (username: string) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.GET_STEPS)
+    const step = await executeStoredProcedure(PROCEDURES.GET_STEP_BY_USERNAME, {
+      params: { Username: username }
+    })
+
+    return step[0]
   } catch (error) {
     throw error
   }
 }
 
-export const getStepById = async (id: string) => {
+export const db_resetUserStep = async (username: string, stepName: string) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.GET_STEP_BY_ID, { id })
+    const step = await executeStoredProcedure(PROCEDURES.RESET_USER_STEP, {
+      params: { Username: username, StepName: stepName }
+    })
+
+    return step[0]
   } catch (error) {
     throw error
   }
 }
 
-export const createStep = async (data: any) => {
+export const db_updateStep = async (data: {
+  Username: string
+  StepName: string
+}) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.CREATE_STEP, data)
-  } catch (error) {
-    throw error
-  }
-}
+    const result = await executeStoredProcedure(PROCEDURES.UPDATE_STEP, {
+      params: data
+    })
 
-export const updateStep = async (data: any) => {
-  try {
-    return await executeStoredProcedure(PROCEDURES.UPDATE_STEP, data)
+    return result
   } catch (error) {
     throw error
   }

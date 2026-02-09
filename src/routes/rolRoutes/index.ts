@@ -14,12 +14,18 @@ class RolRoutes {
     this.router.get('/get-roles', authMiddleware, roleController.getRoles)
     this.router.get(
       '/get-roles-with-details',
-      // authMiddleware,
+      authMiddleware,
       roleController.getRolesWithDetails
     )
     this.router.get('/get-role/:userId', authMiddleware)
     this.router.post('/create-role', authMiddleware, roleController.createRole)
     this.router.put('/update-role', authMiddleware, roleController.updateRole)
+    this.router.post('/asign-role', authMiddleware, roleController.asignRole)
+    this.router.put(
+      '/disactivate-role/:username',
+      authMiddleware,
+      roleController.disactivateRole
+    )
     this.router.delete('/delete-role/:id', authMiddleware)
   }
 }

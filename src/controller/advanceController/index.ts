@@ -7,7 +7,11 @@ import {
   RESPONSE_STATUS_FAIL,
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
-import { getAdvances, createAdvance, updateAdvance } from '~/database/advanceDB'
+import {
+  db_getAdvances,
+  db_createAdvance,
+  db_updateAdvance
+} from '~/database/advanceDB'
 import { catchAsync } from '~/utils/catchAsync'
 
 class AdvanceController {
@@ -25,7 +29,7 @@ class AdvanceController {
       data: []
     }
 
-    const advances = await getAdvances()
+    const advances = await db_getAdvances()
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -46,7 +50,7 @@ class AdvanceController {
       data: []
     }
 
-    const result = await createAdvance(req.body)
+    const result = await db_createAdvance(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -68,7 +72,7 @@ class AdvanceController {
       data: []
     }
 
-    const result = await updateAdvance(id as string, req.body)
+    const result = await db_updateAdvance(id as string, req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS

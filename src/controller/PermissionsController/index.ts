@@ -7,7 +7,10 @@ import {
   RESPONSE_STATUS_FAIL,
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
-import { getPermissions, getPermissionsByRole } from '~/database/permissionsDB'
+import {
+  db_getPermissions,
+  db_getPermissionsByRole
+} from '~/database/permissionsDB'
 import { catchAsync } from '~/utils/catchAsync'
 
 class PermissionsController {
@@ -22,7 +25,7 @@ class PermissionsController {
       data: []
     }
 
-    const permissions = await getPermissions()
+    const permissions = await db_getPermissions()
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -45,7 +48,7 @@ class PermissionsController {
         data: []
       }
 
-      const permissions = await getPermissionsByRole(Number(roleId))
+      const permissions = await db_getPermissionsByRole(Number(roleId))
       response.responseCode = RESPONSE_CODE_SUCCESS
       response.message = RESPONSE_MESSAGE_SUCCESS
       response.status = RESPONSE_STATUS_SUCCESS

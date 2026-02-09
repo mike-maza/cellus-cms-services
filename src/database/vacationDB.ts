@@ -122,11 +122,13 @@ let solicitudesVacacionesData: SolicitudVacaciones[] = [
   }
 ]
 
-export const getVacations = async () => {
+export const db_getVacations = async () => {
   return solicitudesVacacionesData
 }
 
-export const createVacation = async (data: Omit<SolicitudVacaciones, 'id'>) => {
+export const db_createVacation = async (
+  data: Omit<SolicitudVacaciones, 'id'>
+) => {
   const newVacation = {
     ...data,
     id: `VAC${Date.now()}`
@@ -135,7 +137,7 @@ export const createVacation = async (data: Omit<SolicitudVacaciones, 'id'>) => {
   return newVacation
 }
 
-export const updateVacation = async (
+export const db_updateVacation = async (
   id: string,
   data: Partial<SolicitudVacaciones>
 ) => {
@@ -145,20 +147,23 @@ export const updateVacation = async (
   solicitudesVacacionesData[index] = {
     ...solicitudesVacacionesData[index],
     ...data
-  }
+  } as SolicitudVacaciones
   return solicitudesVacacionesData[index]
 }
 
-export const addCommentToVacation = async (id: string, comment: Comentario) => {
+export const db_addCommentToVacation = async (
+  id: string,
+  comment: Comentario
+) => {
   const index = solicitudesVacacionesData.findIndex(v => v.id === id)
   if (index === -1) throw new Error('Vacation not found')
 
   const vacation = solicitudesVacacionesData[index]
-  const updatedConversacion = [...(vacation.conversacion || []), comment]
+  vacation.conversacion = [...(vacation.conversacion || []), comment]
 
   solicitudesVacacionesData[index] = {
     ...vacation,
-    conversacion: updatedConversacion
-  }
+    conversacion: vacation.conversacion
+  } as SolicitudVacaciones
   return solicitudesVacacionesData[index]
 }

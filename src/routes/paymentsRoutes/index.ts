@@ -13,17 +13,17 @@ class PaymentsRoutes {
   routes() {
     this.router.get(
       '/get-payments',
-      // authMiddleware,
+      authMiddleware,
       paymentController.getPayments
     )
     this.router.get(
       '/get-payment-by-uiauthorization/:uiAuthorization/:codEmployee',
-      // authMiddleware,
+      authMiddleware,
       paymentController.getPaymentByUiAuthorization
     )
     this.router.post(
       '/sign-on-behalf',
-      // authMiddleware,
+      authMiddleware,
       paymentController.signOnBehalf
     )
     // this.router.post('/create-payment', authMiddleware)

@@ -255,6 +255,55 @@ export const sendWelcomeEmail = async (
 }
 
 /**
+ * Envía una notificación de nuevo inicio de sesión detectado
+ *
+ * Alerta al usuario cuando se detecta un inicio de sesión desde un
+ * dispositivo o ubicación nueva.
+ *
+ * @async
+ * @param {string} email - Dirección de correo del destinatario
+ * @returns {Promise<{success: boolean, messageId?: string, error?: any}>} Resultado del envío
+ *
+ * @example
+ * ```typescript
+ * await sendNewLoginDetectedEmail('usuario@example.com')
+ * ```
+ *
+ * @todo Completar las variables fullName y email en el objeto variables
+ */
+export const sendNewLoginDetectedEmail = async (
+  email: string,
+  fullName: string,
+  loginDetails: {
+    location: string
+    time: string
+    browser: string
+    device: string
+    ip: string
+  }
+) => {
+  const variables = {
+    fullName,
+    email,
+    location: loginDetails.location,
+    time: loginDetails.time,
+    browser: loginDetails.browser,
+    device: loginDetails.device,
+    ip: loginDetails.ip,
+    activityUrl: 'https://cellus.com.gt/profile/activity', // URL placeholder
+    tokensUrl: 'https://cellus.com.gt/profile/security', // URL placeholder
+    companyName: 'CELLUS S.A'
+  }
+
+  return sendTemplateEmail(
+    email,
+    'Se ha detectado un nuevo inicio de sesión en su cuenta de Cellus Payments',
+    'new-detect-device',
+    variables
+  )
+}
+
+/**
  * Envía un correo de restablecimiento de contraseña
  *
  * Utiliza la plantilla 'resetPassword.html' para enviar una contraseña temporal

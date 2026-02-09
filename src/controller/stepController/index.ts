@@ -7,44 +7,15 @@ import {
   RESPONSE_STATUS_FAIL,
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
-import {
-  getSteps,
-  getStepById,
-  createStep,
-  updateStep
-} from '~/database/stepDB'
+import { db_getStepsByUser, db_resetUserStep } from '~/database/stepDB'
 import { catchAsync } from '~/utils/catchAsync'
 
 class StepController {
   /**
-   * Obtiene todos los pasos
-   */
-  /**
-   * Obtiene todos los pasos
-   */
-  public getSteps = catchAsync(async (req: Request, res: Response) => {
-    const response = {
-      responseCode: '',
-      message: '',
-      status: '',
-      data: []
-    }
-
-    const steps = await getSteps()
-    response.responseCode = RESPONSE_CODE_SUCCESS
-    response.message = RESPONSE_MESSAGE_SUCCESS
-    response.status = RESPONSE_STATUS_SUCCESS
-    // @ts-ignore
-    response.data = steps
-
-    res.send({ getStepsResponse: response })
-  })
-
-  /**
    * Obtiene un paso por ID
    */
-  public getStepById = catchAsync(async (req: Request, res: Response) => {
-    const { id } = req.params
+  getStepsByUser = catchAsync(async (req: Request, res: Response) => {
+    const { username } = req.params
     const response = {
       responseCode: '',
       message: '',
@@ -52,20 +23,21 @@ class StepController {
       data: []
     }
 
-    const step = await getStepById(id ?? '')
+    const step = await db_getStepsByUser(username as string)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
-    // @ts-ignore
     response.data = step
 
-    res.send({ getStepByIdResponse: response })
+    res.send({ getStepsByUserResponse: response })
   })
 
   /**
-   * Crea un nuevo paso
+   *
    */
-  public createStep = catchAsync(async (req: Request, res: Response) => {
+
+  resetUserStep = catchAsync(async (req: Request, res: Response) => {
+    const { username, stepName } = req.params
     const response = {
       responseCode: '',
       message: '',
@@ -73,20 +45,17 @@ class StepController {
       data: []
     }
 
-    const result = await createStep(req.body)
+    const step = await db_resetUserStep(username as string, stepName as string)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
-    // @ts-ignore
-    response.data = result
+    response.data = step
 
-    res.send({ createStepResponse: response })
+    res.send({ resetUserStepResponse: response })
   })
 
-  /**
-   * Actualiza un paso
-   */
-  public updateStep = catchAsync(async (req: Request, res: Response) => {
+  deleteUserStep = catchAsync(async (req: Request, res: Response) => {
+    const { username, stepName } = req.params
     const response = {
       responseCode: '',
       message: '',
@@ -94,14 +63,13 @@ class StepController {
       data: []
     }
 
-    const result = await updateStep(req.body)
+    const step = await db_resetUserStep(username as string, stepName as string)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
-    // @ts-ignore
-    response.data = result
+    response.data = step
 
-    res.send({ updateStepResponse: response })
+    res.send({ deleteUserStepResponse: response })
   })
 }
 

@@ -7,7 +7,11 @@ import {
   RESPONSE_STATUS_FAIL,
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
-import { getVacations } from '~/database/vacationDB'
+import {
+  db_getVacations,
+  db_createVacation,
+  db_updateVacation
+} from '~/database/vacationDB'
 import { catchAsync } from '~/utils/catchAsync'
 
 class CalendarController {
@@ -27,7 +31,7 @@ class CalendarController {
 
     // Por ahora agregamos solo vacaciones como eventos
     // En el futuro podemos agregar cumpleaños de empleados, dias festivos, etc
-    const vacations = await getVacations()
+    const vacations = await db_getVacations()
 
     const events = vacations.map(v => ({
       id: v.id,

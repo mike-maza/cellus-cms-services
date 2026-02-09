@@ -8,10 +8,10 @@ import {
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
-  getVacations,
-  createVacation,
-  updateVacation,
-  addCommentToVacation
+  db_getVacations,
+  db_createVacation,
+  db_updateVacation,
+  db_addCommentToVacation
 } from '~/database/vacationDB'
 import { catchAsync } from '~/utils/catchAsync'
 import { mockVacacionesData } from '~/constants/mockData'
@@ -31,7 +31,7 @@ class VacationController {
       data: []
     }
 
-    const vacations = await getVacations()
+    const vacations = await db_getVacations()
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -52,12 +52,12 @@ class VacationController {
       data: []
     }
 
-    const result = await createVacation(req.body)
+    const newVacation = await db_createVacation(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
     // @ts-ignore
-    response.data = result
+    response.data = newVacation
 
     res.send({ createVacationResponse: response })
   })
@@ -74,7 +74,7 @@ class VacationController {
       data: []
     }
 
-    const result = await updateVacation(id as string, req.body)
+    const result = await db_updateVacation(id as string, req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -96,12 +96,15 @@ class VacationController {
       data: []
     }
 
-    const result = await addCommentToVacation(id as string, req.body)
+    const updatedVacation = await db_addCommentToVacation(
+      id as string,
+      req.body
+    )
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
     // @ts-ignore
-    response.data = result
+    response.data = updatedVacation
 
     res.send({ addCommentResponse: response })
   })

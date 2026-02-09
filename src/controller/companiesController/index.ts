@@ -8,10 +8,10 @@ import {
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
-  getAllCompaniesDB,
-  getCompanyByIdDB,
-  createCompanyDB,
-  updateCompanyDB
+  db_getAllCompanies,
+  db_getCompanyById,
+  db_createCompany,
+  db_updateCompany
 } from '~/database/companiesDB'
 import { catchAsync } from '~/utils/catchAsync'
 
@@ -30,7 +30,7 @@ class CompaniesController {
       companies: []
     }
 
-    const companies = await getAllCompaniesDB()
+    const companies = await db_getAllCompanies()
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -52,7 +52,7 @@ class CompaniesController {
       data: []
     }
 
-    const company = await getCompanyByIdDB(id as string)
+    const company = await db_getCompanyById(id as string)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -73,7 +73,7 @@ class CompaniesController {
       data: []
     }
 
-    const result = await createCompanyDB(req.body)
+    const result = await db_createCompany(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -94,7 +94,7 @@ class CompaniesController {
       data: []
     }
 
-    const result = await updateCompanyDB(req.body)
+    const result = await db_updateCompany(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS

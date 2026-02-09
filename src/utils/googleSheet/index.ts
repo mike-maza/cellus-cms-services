@@ -15,8 +15,11 @@ import { addTicket } from '~/utils/tickets'
 
 import { SheetConfig } from '~/types'
 import { SheetAnalyzerService } from '../sheetAnalyzerService'
-import { insertOrUpdateBoletaDB } from '~/database/boletasDB'
-import { createEmployee } from '~/database/employeeDB'
+import {
+  db_insertOrUpdateBoleta,
+  db_getBoletoOrnatoData
+} from '~/database/boletasDB'
+import { db_createEmployee } from '~/database/employeeDB'
 
 // Función auxiliar mejorada
 const getRowValue = (row: any, headers: string[], index: number): string => {
@@ -288,7 +291,7 @@ export const googleSheetsPayments = async (
         sheetName
       )
 
-      /*const result = await insertOrUpdateBoletaDB(currentPayment as any)
+      const result = await db_insertOrUpdateBoleta(currentPayment as any)
 
       if (result?.success) {
         const rowNumber = index + 2
@@ -306,7 +309,7 @@ export const googleSheetsPayments = async (
             fullName: currentPayment.FullName
           }
         })
-      }*/
+      }
 
       paymentHistory.push(currentPayment)
       await delay(100) // 100ms para evitar sobrecargar el servidor
@@ -347,6 +350,217 @@ export const googleSheetsPayments = async (
       message: 'Error al procesar los datos de la planilla',
       error: error instanceof Error ? error.message : 'Error desconocido',
       data: []
+    }
+  }
+}
+
+export const googleSheetsPaymentsPreview = async (
+  spreadsheetId: string,
+  sheetName: string,
+  username: string
+) => {
+  try {
+    const range = `${sheetName.trim()}!A1:ZZ`
+    const sheetService = new GoogleSheetsService()
+    const sheetAnalyzer = new SheetAnalyzerService()
+    const paymentHistory: any[] = []
+
+    const fecha = getDate(sheetName)
+
+    const config: SheetConfig = {
+      spreadsheetId,
+      range
+    }
+
+    const sheetData = await sheetService.readSheet(config)
+
+    if (!sheetData || sheetData.length === 0) {
+      return {
+        success: false,
+        message: 'No se encontraron datos en la hoja especificada',
+        data: []
+      }
+    }
+
+    const headers = sheetData[0]
+    const rows = sheetData.slice(1)
+    const structure = sheetAnalyzer.analyzeStructure(headers)
+
+    const searchDate = sheetName.includes('Aguinaldo')
+      ? ['Diciembre', '14', String(new Date().getFullYear())]
+      : sheetName.includes('Bono Productividad')
+        ? sheetName.split(' ').slice(2)
+        : sheetName.split(' ')
+
+    const basePayment = {
+      SheetName: sheetName,
+      PaymentIndicator: 'biweekly-payment',
+      PayDay: fecha,
+      DAY: searchDate[1],
+      MONTH: dictMonth[searchDate[0] || ''],
+      YEAR: searchDate[2],
+      CreatedDateInvoice: new Date(),
+      UpdatedDateInvoice: new Date(),
+      UserWhoCreates: username
+    }
+
+    const paymentProcessors = {
+      'Bonificacion Productividad Vendedor': {
+        checkIndex: 19,
+        paymentIndicator: 'productivityBonus',
+        processPayment: (payment: any, row: any) => {
+          payment.CodEmployee = getRowValue(row, headers, 0)
+          payment.FullName = getRowValue(row, headers, 1)
+          payment.Billing = getRowValue(row, headers, 2)
+          payment.NoBoleta = generateNoBoleta(payment.CodEmployee, sheetName)
+          payment.Total = getRowValue(row, headers, 19)
+        }
+      },
+      'Bono Productividad': {
+        checkIndex: 2,
+        paymentIndicator: 'productivityBonusPayments',
+        processPayment: (payment: any, row: any) => {
+          payment.CodEmployee = getRowValue(row, headers, 0)
+          payment.FullName = getRowValue(row, headers, 1)
+          payment.NoBoleta = generateNoBoleta(payment.CodEmployee, sheetName)
+          payment.Total = getRowValue(row, headers, 2)
+        }
+      },
+      'Bono 14': {
+        checkIndex: 3,
+        paymentIndicator: 'bonus-14-payment',
+        processPayment: (payment: any, row: any) => {
+          payment.CodEmployee = getRowValue(row, headers, 0)
+          payment.FullName = getRowValue(row, headers, 1)
+          payment.AmountDays = getRowValue(row, headers, 2)
+          payment.Bonus14 = getRowValue(row, headers, 3)
+          payment.Total = getRowValue(row, headers, 3)
+        }
+      },
+      Aguinaldo: {
+        checkIndex: 3,
+        paymentIndicator: 'aguinaldo-payment',
+        processPayment: (payment: any, row: any) => {
+          payment.CodEmployee = getRowValue(row, headers, 0)
+          payment.FullName = getRowValue(row, headers, 1)
+          payment.AmountDays = getRowValue(row, headers, 2)
+          payment.Total = getRowValue(row, headers, 3)
+        }
+      }
+    }
+
+    const processRegularPayment = (payment: any, row: any) => {
+      payment.CodEmployee = getRowValue(row, headers, 0)
+      payment.FullName = getRowValue(row, headers, 1)
+      payment.AmountDays = getRowValue(row, headers, 2)
+      payment.BiweeklyAdvance = getRowValue(row, headers, 3)
+      payment.NoBoleta = generateNoBoleta(payment.CodEmployee, sheetName)
+      payment.TotalOvertime = getRowValue(row, headers, 4)
+      payment.Bonus = getRowValue(row, headers, 5)
+      payment.Bonus79 = getRowValue(row, headers, 6)
+      payment.TotalBiweeklyToPay = getRowValue(row, headers, 7)
+
+      payment.TotalDeductions = getRowValue(
+        row,
+        headers,
+        (
+          structure.deductionColumns[structure.deductionColumns.length - 1] ?? {
+            index: 15
+          }
+        )?.index + 1 || 15
+      )
+      payment.Total = getRowValue(
+        row,
+        headers,
+        (
+          structure.deductionColumns[structure.deductionColumns.length - 1] ?? {
+            index: 15
+          }
+        )?.index + 2 || 16
+      )
+      payment.Accreditation1 = getRowValue(
+        row,
+        headers,
+        (
+          structure.deductionColumns[structure.deductionColumns.length - 1] ?? {
+            index: 15
+          }
+        )?.index + 3 || 17
+      )
+      payment.Accreditation2 = getRowValue(
+        row,
+        headers,
+        (
+          structure.deductionColumns[structure.deductionColumns.length - 1] ?? {
+            index: 15
+          }
+        )?.index + 4 || 18
+      )
+      payment.Comments = getRowValue(
+        row,
+        headers,
+        (
+          structure.deductionColumns[structure.deductionColumns.length - 1] ?? {
+            index: 15
+          }
+        )?.index + 5 || 19
+      )
+    }
+
+    for (const [index, row] of rows.entries()) {
+      const currentPayment = {
+        ...basePayment,
+        CodEmployee: '',
+        FullName: '',
+        NoBoleta: '',
+        UiAuthorization: `PREVIEW-${index}`,
+        Comments: '',
+        Total: '0'
+      }
+
+      let processor = null
+      for (const [key, config] of Object.entries(paymentProcessors)) {
+        if (sheetName.includes(key)) {
+          processor = config
+          break
+        }
+      }
+
+      const checkIndex = processor ? processor.checkIndex : 16
+      const totalValue = getRowValue(row, headers, checkIndex)
+      const isValidPayment = String(totalValue ?? '').trim() !== ''
+
+      if (!isValidPayment) continue
+
+      if (processor) {
+        currentPayment.PaymentIndicator = processor.paymentIndicator
+        processor.processPayment(currentPayment, row)
+      } else {
+        processRegularPayment(currentPayment, row)
+      }
+
+      ;(currentPayment as any).Deducciones = JSON.stringify(
+        sheetAnalyzer.extractDeductions(row, structure, headers)
+      )
+
+      currentPayment.NoBoleta = generateNoBoleta(
+        currentPayment.CodEmployee,
+        sheetName
+      )
+
+      paymentHistory.push(currentPayment)
+    }
+
+    return {
+      success: true,
+      data: paymentHistory
+    }
+  } catch (error) {
+    console.error('Error al generar vista previa:', error)
+    return {
+      success: false,
+      message: 'Error al procesar la vista previa',
+      error: error instanceof Error ? error.message : 'Error desconocido'
     }
   }
 }
@@ -676,7 +890,7 @@ export const googleSheetsClients = async (
 
             // Solo intentamos crear si tenemos un código de empleado válido
             if (employeeData.CodEmployee) {
-              const response = await createEmployee(employeeData)
+              const response = await db_createEmployee(employeeData)
 
               const message = response[0]?.Mensaje
               const isNew =

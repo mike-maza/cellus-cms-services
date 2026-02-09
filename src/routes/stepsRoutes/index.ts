@@ -11,10 +11,23 @@ class StepsRoutes {
   }
 
   routes() {
-    this.router.get('/get-steps', authMiddleware, stepController.getSteps)
-    this.router.get('/get-steps/:id', authMiddleware, stepController.getStepById)
-    this.router.post('/create-step', authMiddleware, stepController.createStep)
-    this.router.put('/update-step', authMiddleware, stepController.updateStep)
+    this.router.get(
+      '/get-step/:username',
+      authMiddleware,
+      stepController.getStepsByUser
+    )
+
+    this.router.put(
+      '/reset-step/:username/:stepName',
+      authMiddleware,
+      stepController.resetUserStep
+    )
+
+    this.router.delete(
+      '/delete-step/:username/:stepName',
+      authMiddleware,
+      stepController.deleteUserStep
+    )
   }
 }
 

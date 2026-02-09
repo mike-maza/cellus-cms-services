@@ -8,8 +8,9 @@ import {
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
-  getPayments,
-  getPaymentByUiAuthorizationDB
+  db_getPayments,
+  db_getPaymentByUiAuthorization,
+  db_signPaymentOnBehalf
 } from '~/database/paymentDB'
 import { catchAsync } from '~/utils/catchAsync'
 
@@ -27,7 +28,7 @@ class PaymentController {
 
     const { yearMonths, page, pageSize } = req.query
 
-    const payments = await getPayments({
+    const payments = await db_getPayments({
       YearMonths: yearMonths as string | undefined,
       PageNumber: page ? Number(page) : undefined,
       PageSize: pageSize ? Number(pageSize) : undefined
@@ -55,9 +56,11 @@ class PaymentController {
 
       const { codEmployee, uiAuthorization } = req.params
 
+      console.log('='.repeat(100))
       console.log(codEmployee, uiAuthorization)
+      console.log('='.repeat(100))
 
-      const payment = await getPaymentByUiAuthorizationDB({
+      const payment = await db_getPaymentByUiAuthorization({
         CodEmployee: codEmployee as string,
         UiAuthorization: uiAuthorization as string
       })
@@ -94,13 +97,11 @@ class PaymentController {
     // Since I can't edit imports and class body in one contiguous block easily if they are far apart, I'll do two edits.
 
     // This edit adds the method.
-    const result = await import('~/database/paymentDB').then(m =>
-      m.signPaymentOnBehalfDB({
-        CodEmployee: codEmployee,
-        UiAuthorization: uiAuthorization,
-        SignedBy: signedBy
-      })
-    )
+    const result = await db_signPaymentOnBehalf({
+      CodEmployee: codEmployee,
+      UiAuthorization: uiAuthorization,
+      SignedBy: signedBy
+    })
 
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS

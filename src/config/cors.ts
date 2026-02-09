@@ -37,7 +37,7 @@ export const corsOptions: CorsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   maxAge: 86400 // 24 horas
 }

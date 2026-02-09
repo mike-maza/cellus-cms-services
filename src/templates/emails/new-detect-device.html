@@ -1,0 +1,680 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="x-apple-disable-message-reformatting" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="supported-color-schemes" content="light dark" />
+    <meta
+      name="description"
+      content="Notificación de inicio de sesión - CELLUS S.A"
+    />
+    <title>Nuevo Inicio de Sesión Detectado</title>
+  </head>
+  <body
+    style="
+      margin: 0;
+      padding: 0;
+      background-color: #0a0a0a;
+      font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+        Arial, sans-serif;
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    "
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      border="0"
+      style="
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        background-color: #0a0a0a;
+        border-collapse: collapse;
+      "
+    >
+      <tr>
+        <td align="center" style="padding: 30px 15px">
+          <!-- Main container -->
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            border="0"
+            style="
+              max-width: 600px;
+              background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+              box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+              border-collapse: collapse;
+              border-radius: 16px;
+              overflow: hidden;
+              border: 1px solid #2a2a2a;
+            "
+          >
+            <!-- Header con degradado -->
+            <tr>
+              <td
+                style="
+                  padding: 40px 30px;
+                  text-align: center;
+                  background: linear-gradient(135deg, #f97316 0%, #fb923c 100%);
+                "
+              >
+                <img
+                  src="https://cellus.com.gt/LogoCellusVector.webp"
+                  alt="CELLUS S.A"
+                  width="120"
+                  height="auto"
+                  style="
+                    display: block;
+                    margin: 0 auto;
+                    max-width: 120px;
+                    height: auto;
+                    border: 0;
+                    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+                  "
+                />
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 40px 35px">
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  style="border-collapse: collapse"
+                >
+                  <!-- Badge de alerta -->
+                  <tr>
+                    <td style="text-align: center; padding-bottom: 20px">
+                      <span
+                        style="
+                          display: inline-block;
+                          background: linear-gradient(
+                            135deg,
+                            #3b82f6 0%,
+                            #60a5fa 100%
+                          );
+                          color: #ffffff;
+                          padding: 8px 20px;
+                          border-radius: 20px;
+                          font-size: 12px;
+                          font-weight: 700;
+                          text-transform: uppercase;
+                          letter-spacing: 0.5px;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                        >🔐 Alerta de Seguridad</span
+                      >
+                    </td>
+                  </tr>
+
+                  <!-- Título principal -->
+                  <tr>
+                    <td style="padding: 0 0 25px 0; text-align: center">
+                      <h1
+                        style="
+                          font-size: 28px;
+                          margin: 0 0 15px 0;
+                          font-weight: 800;
+                          color: #f97316;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                          line-height: 1.3;
+                        "
+                      >
+                        Nuevo Inicio de Sesión Detectado
+                      </h1>
+                    </td>
+                  </tr>
+
+                  <!-- Saludo -->
+                  <tr>
+                    <td style="padding: 0 0 20px 0">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 16px;
+                          line-height: 26px;
+                          color: #e5e5e5;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Hola,
+                        <span style="color: #f97316; font-weight: 700"
+                          >{{fullName}}</span
+                        >
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Mensaje principal -->
+                  <tr>
+                    <td style="padding: 0 0 25px 0">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 15px;
+                          line-height: 24px;
+                          color: #b0b0b0;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Tu cuenta de
+                        <span style="color: #f97316; font-weight: 700"
+                          >{{email}}</span
+                        >
+                        fue recientemente utilizada desde una nueva ubicación,
+                        dispositivo o navegador.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Detalles del dispositivo -->
+                  <tr>
+                    <td style="padding: 0 0 25px 0">
+                      <table
+                        role="presentation"
+                        width="100%"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        style="
+                          border-collapse: collapse;
+                          background: linear-gradient(
+                            135deg,
+                            #1f1f1f 0%,
+                            #2a2a2a 100%
+                          );
+                          border-radius: 12px;
+                          border: 1px solid #333;
+                          overflow: hidden;
+                        "
+                      >
+                        <tr>
+                          <td style="padding: 30px 25px">
+                            <table
+                              role="presentation"
+                              width="100%"
+                              cellspacing="0"
+                              cellpadding="0"
+                              border="0"
+                              style="border-collapse: collapse"
+                            >
+                              <!-- Ubicación -->
+                              <tr>
+                                <td style="padding: 0 0 12px 0">
+                                  <table
+                                    role="presentation"
+                                    width="100%"
+                                    cellspacing="0"
+                                    cellpadding="0"
+                                    border="0"
+                                    style="border-collapse: collapse"
+                                  >
+                                    <tr>
+                                      <td
+                                        style="
+                                          width: 120px;
+                                          padding: 0;
+                                          vertical-align: top;
+                                        "
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            font-weight: 700;
+                                            color: #e5e5e5;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          Ubicación
+                                        </p>
+                                      </td>
+                                      <td
+                                        style="padding: 0; vertical-align: top"
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            color: #b0b0b0;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          {{location}}
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+
+                              <!-- Hora -->
+                              <tr>
+                                <td style="padding: 0 0 12px 0">
+                                  <table
+                                    role="presentation"
+                                    width="100%"
+                                    cellspacing="0"
+                                    cellpadding="0"
+                                    border="0"
+                                    style="border-collapse: collapse"
+                                  >
+                                    <tr>
+                                      <td
+                                        style="
+                                          width: 120px;
+                                          padding: 0;
+                                          vertical-align: top;
+                                        "
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            font-weight: 700;
+                                            color: #e5e5e5;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          Hora
+                                        </p>
+                                      </td>
+                                      <td
+                                        style="padding: 0; vertical-align: top"
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            color: #b0b0b0;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          {{time}}
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+
+                              <!-- Navegador -->
+                              <tr>
+                                <td style="padding: 0 0 12px 0">
+                                  <table
+                                    role="presentation"
+                                    width="100%"
+                                    cellspacing="0"
+                                    cellpadding="0"
+                                    border="0"
+                                    style="border-collapse: collapse"
+                                  >
+                                    <tr>
+                                      <td
+                                        style="
+                                          width: 120px;
+                                          padding: 0;
+                                          vertical-align: top;
+                                        "
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            font-weight: 700;
+                                            color: #e5e5e5;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          Navegador
+                                        </p>
+                                      </td>
+                                      <td
+                                        style="padding: 0; vertical-align: top"
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            color: #b0b0b0;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          {{browser}}
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+
+                              <!-- Dispositivo -->
+                              <tr>
+                                <td style="padding: 0 0 12px 0">
+                                  <table
+                                    role="presentation"
+                                    width="100%"
+                                    cellspacing="0"
+                                    cellpadding="0"
+                                    border="0"
+                                    style="border-collapse: collapse"
+                                  >
+                                    <tr>
+                                      <td
+                                        style="
+                                          width: 120px;
+                                          padding: 0;
+                                          vertical-align: top;
+                                        "
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            font-weight: 700;
+                                            color: #e5e5e5;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          Dispositivo
+                                        </p>
+                                      </td>
+                                      <td
+                                        style="padding: 0; vertical-align: top"
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            color: #b0b0b0;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          {{device}}
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+
+                              <!-- IP -->
+                              <tr>
+                                <td style="padding: 0">
+                                  <table
+                                    role="presentation"
+                                    width="100%"
+                                    cellspacing="0"
+                                    cellpadding="0"
+                                    border="0"
+                                    style="border-collapse: collapse"
+                                  >
+                                    <tr>
+                                      <td
+                                        style="
+                                          width: 120px;
+                                          padding: 0;
+                                          vertical-align: top;
+                                        "
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            font-weight: 700;
+                                            color: #e5e5e5;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          IP
+                                        </p>
+                                      </td>
+                                      <td
+                                        style="padding: 0; vertical-align: top"
+                                      >
+                                        <p
+                                          style="
+                                            margin: 0;
+                                            font-size: 15px;
+                                            color: #b0b0b0;
+                                            font-family:
+                                              -apple-system, BlinkMacSystemFont,
+                                              'Segoe UI', Roboto, sans-serif;
+                                          "
+                                        >
+                                          {{ip}}
+                                        </p>
+                                      </td>
+                                    </tr>
+                                  </table>
+                                </td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Separador -->
+                  <tr>
+                    <td style="padding: 25px 0">
+                      <table
+                        role="presentation"
+                        width="100%"
+                        cellspacing="0"
+                        cellpadding="0"
+                        border="0"
+                        style="border-collapse: collapse"
+                      >
+                        <tr>
+                          <td style="border-top: 1px solid #333"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+
+                  <!-- Título de no reconocimiento -->
+                  <tr>
+                    <td style="padding: 0 0 20px 0">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 17px;
+                          font-weight: 700;
+                          line-height: 24px;
+                          color: #e5e5e5;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        ¿No reconoces esta actividad?
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Mensaje de acción -->
+                  <tr>
+                    <td style="padding: 0 0 20px 0">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 15px;
+                          line-height: 24px;
+                          color: #b0b0b0;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Revisa tu
+                        <a
+                          href="{{activityUrl}}"
+                          style="
+                            color: #3b82f6;
+                            text-decoration: none;
+                            font-weight: 600;
+                          "
+                          >actividad reciente</a
+                        >
+                        y
+                        <a
+                          href="{{tokensUrl}}"
+                          style="
+                            color: #3b82f6;
+                            text-decoration: none;
+                            font-weight: 600;
+                          "
+                          >tokens de acceso</a
+                        >
+                        ahora.
+                      </p>
+                    </td>
+                  </tr>
+
+                  <!-- Explicación adicional -->
+                  <tr>
+                    <td style="padding: 0 0 20px 0">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 14px;
+                          line-height: 22px;
+                          color: #888;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Te enviamos este correo porque no pudimos determinar si
+                        has iniciado sesión desde esta ubicación o navegador
+                        anteriormente. Esto puede deberse a que estás viajando,
+                        usando una VPN o Private Relay, un navegador nuevo o
+                        actualizado, u otra persona está usando tu cuenta.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td
+                style="
+                  padding: 30px;
+                  background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+                  border-top: 1px solid #2a2a2a;
+                "
+              >
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  border="0"
+                  style="border-collapse: collapse"
+                >
+                  <tr>
+                    <td style="text-align: center; padding-bottom: 15px">
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 13px;
+                          color: #666;
+                          line-height: 20px;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        &copy; 2025 {{companyName}} Todos los derechos
+                        reservados
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: center">
+                      <p
+                        style="
+                          margin: 0 0 8px 0;
+                          font-size: 11px;
+                          color: #555;
+                          line-height: 18px;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Este es un correo automático. Por favor no responda a
+                        este mensaje.
+                      </p>
+                      <p
+                        style="
+                          margin: 0;
+                          font-size: 11px;
+                          color: #555;
+                          line-height: 18px;
+                          font-family:
+                            -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                            Roboto, sans-serif;
+                        "
+                      >
+                        Si tienes dudas sobre seguridad, contacta a:
+                        <a
+                          href="mailto:devops@cellus.com.gt"
+                          style="color: #f97316; text-decoration: none"
+                          >devops@cellus.com.gt</a
+                        >
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

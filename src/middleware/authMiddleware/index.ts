@@ -8,6 +8,7 @@ import {
   verifyTokenWithFingerprint,
   generateUserFingerprint
 } from '~/utils/tokens'
+import { db_getRoleByUsername } from '~/database/rolesDB'
 import {
   logUnauthorizedAccess,
   logSuspiciousActivity,
@@ -57,9 +58,7 @@ export const authMiddleware = async (
     const user = (payload as any)?.user ?? payload
 
     // Extraer información del usuario
-    const currentUserCode = String(
-      user?.CodEmployee ?? user?.codEmployee ?? user?.username ?? ''
-    )
+    const currentUserCode = String(user?.username ?? '')
       .trim()
       .toLowerCase()
 
@@ -79,14 +78,31 @@ export const authMiddleware = async (
 
     // VALIDACIÓN ESTRICTA: Verificar que el usuario solo acceda a sus propios datos
     const requestedRaw =
-      (req as any).params?.codEmployee ??
-      (req as any).body?.codEmployee ??
-      (req as any).query?.codEmployee
+      (req as any).params?.username ??
+      (req as any).body?.username ??
+      (req as any).query?.username
 
     if (requestedRaw) {
       const requestedUserCode = String(requestedRaw).trim().toLowerCase()
 
-      if (requestedUserCode !== currentUserCode) {
+      // Obtener rol desde la base de datos ya que el token no siempre lo tiene actualizado o presente
+      const roleResult = await db_getRoleByUsername(currentUserCode)
+      // Ajustar según estructura respuesta: puede ser un array o objeto directo
+      // Si es un array: roleResult[0]
+      const roleData = Array.isArray(roleResult) ? roleResult[0] : roleResult
+
+      const userRole = String(
+        roleData?.RoleName ||
+          roleData?.RoleName ||
+          user?.Role ||
+          user?.role ||
+          ''
+      ).toLowerCase()
+
+      const isAdmin =
+        userRole.includes('administrador') || userRole.includes('administrator')
+
+      if (requestedUserCode !== currentUserCode && !isAdmin) {
         // Registrar actividad sospechosa
         logSuspiciousActivity(
           req,

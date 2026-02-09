@@ -13,12 +13,12 @@ class PermissionsRoutes {
   routes() {
     this.router.get(
       '/get-permissions',
-      // authMiddleware,
+      authMiddleware,
       permissionsController.getPermissions
     )
     this.router.get(
       '/get-permissions-by-role/:roleId',
-      // authMiddleware,
+      authMiddleware,
       permissionsController.getPermissionsByRole
     )
   }

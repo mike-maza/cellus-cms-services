@@ -138,19 +138,19 @@ export function initWebSocketServer(
 
   server.on('upgrade', (request, socket, head) => {
     const originHeader = request.headers.origin
-    console.log('🔌 WS Upgrade Request:', {
+    /* console.log('🔌 WS Upgrade Request:', {
       url: request.url,
       origin: originHeader,
       headers: request.headers
-    })
+    })*/
 
     if (!isOriginAllowed(originHeader, allowedOrigins)) {
-      console.log(
+      /*console.log(
         '❌ WS Origin rejected:',
         originHeader,
         'Allowed:',
         allowedOrigins
-      )
+      )*/
       socket.write('HTTP/1.1 403 Forbidden\r\n\r\n')
       socket.destroy()
       return
@@ -168,61 +168,31 @@ export function initWebSocketServer(
     const token = headerToken || queryToken
     let decoded: DecodedToken | undefined
 
-    const isDev =
-      process.env.NODE_ENV === 'development' ||
-      process.env.NODE_ENV === 'desarrollo'
-
     if (!token) {
-      if (isDev) {
-        console.log(
-          '⚠️ WebSocket: Development mode detected. Bypassing auth token check.'
-        )
-        decoded = {
-          sub: 'dev-user-id',
-          email: 'dev@localhost',
-          role: 'superadmin',
-          scopes: ['sheets:read'],
-          iat: Math.floor(Date.now() / 1000),
-          exp: Math.floor(Date.now() / 1000) + 86400 // 24h
-        }
-      } else {
-        console.log('❌ WS Auth failed: No token provided in production')
-        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-        socket.destroy()
-        return
-      }
-    } else {
-      try {
-        decoded = jwt.verify(token, jwtSecret) as DecodedToken
-        console.log(
-          '✅ WS Token verified for user:',
-          decoded.email || decoded.sub
-        )
-      } catch (e: any) {
-        if (isDev) {
-          console.log(
-            '⚠️ WebSocket: Invalid token in dev mode. Falling back to dev identity.',
-            e.message
-          )
-          decoded = {
-            sub: 'dev-user-id',
-            email: 'dev@localhost',
-            role: 'superadmin',
-            scopes: ['sheets:read'],
-            iat: Math.floor(Date.now() / 1000),
-            exp: Math.floor(Date.now() / 1000) + 86400 // 24h
-          }
-        } else {
-          console.log('❌ WS Token verification failed:', e.message)
-          socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-          socket.destroy()
-          return
-        }
-      }
+      console.log('❌ WS Auth failed: No token provided')
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+      socket.destroy()
+      return
+    }
+
+    console.log(token)
+
+    try {
+      decoded = jwt.verify(token, jwtSecret) as DecodedToken
+      console.log(
+        '✅ WS Token verified for user:',
+        decoded.email || decoded.sub || decoded.user?.Username
+      )
+      console.log('📦 Token payload:', JSON.stringify(decoded, null, 2))
+    } catch (e: any) {
+      console.log('❌ WS Token verification failed:', e.message)
+      socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+      socket.destroy()
+      return
     }
 
     wss.handleUpgrade(request, socket as any, head, ws => {
-      console.log('🚀 WS Connection Upgraded successfully')
+      // console.log('🚀 WS Connection Upgraded successfully')
       // Attach identity to websocket instance
       ;(ws as WebSocket & { user?: DecodedToken }).user = decoded
       wss.emit('connection', ws, request)
@@ -375,7 +345,12 @@ export function initWebSocketServer(
         // Role-based authorization
         const role = (user.role || '').toLowerCase()
         const scopes = Array.isArray(user.scopes) ? user.scopes : []
+
+        // ⚠️ TODO: QUITAR PARA PRODUCCIÓN - Bypass de autorización solo para desarrollo
+        const DEV_SKIP_AUTH = true // Cambiar a false o eliminar en producción
+
         const hasPrivilege =
+          DEV_SKIP_AUTH ||
           role === 'admin' ||
           role === 'superadmin' ||
           scopes.includes('sheets:read')

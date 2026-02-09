@@ -1,11 +1,13 @@
 import { Totp } from 'time2fa'
 import * as qrcode from 'qrcode'
 
-// DB Imports
+// Importaciones de Base de Datos
 import {
-  getDataOfCode2FA,
-  insertedSecretCode2FA,
-  updatedUser
+  db_getAllDevicesOf2FA as getAllDevicesOf2FA,
+  db_createNewDevice2FA as createNewDevice2FA,
+  db_updateDevice2FA as updateDevice2FA,
+  db_deleteDevice2FA as deleteDevice2FA,
+  db_getDevice2FAById as getDevice2FAById
 } from '~/database/2FADB'
 
 import { advancedEncryptionService } from '~/config/encryption'
@@ -21,8 +23,8 @@ import {
 
 export class TwoFactorAuth {
   /**
-   * Generate 2FA Secret and QR Code
-   * @param user Username or identifier
+   * Generar secreto de 2FA y código QR
+   * @param user Nombre de usuario o identificador
    */
   public static async generateURL(user: string) {
     try {
@@ -40,23 +42,21 @@ export class TwoFactorAuth {
         secretCode: secret
       }
     } catch (error) {
-      throw new Error(`Error generating 2FA data: ${error}`)
+      throw new Error(`Error al generar datos de 2FA: ${error}`)
     }
   }
 
   /**
-   * Validate 2FA Code
-   * Handles encryption, failed attempts, and verification
+   * Validar código de 2FA
+   * Maneja encriptación, intentos fallidos y verificación
    */
   public static async validateCode(
     res: any,
     code: string,
     user: string,
-    idUser: number,
     register: boolean,
-    twoFactorID?: number,
     secret?: string,
-    redirectTo?: string,
+    twoFactorID?: string,
     deviceName?: string
   ) {
     try {
@@ -65,17 +65,21 @@ export class TwoFactorAuth {
       if (register) {
         secretCodeVerify = secret || ''
       } else {
-        const record = await getDataOfCode2FA(Number(twoFactorID))
+        const record = (await getDevice2FAById(user, Number(twoFactorID)))[0]
+
+        console.log('*'.repeat(50))
+        console.log(record)
+        console.log('*'.repeat(50))
 
         if (!record || !record.EncryptedSecret) {
-          throw new Error('2FA record not found or invalid')
+          throw new Error('Registro de 2FA no encontrado o inválido')
         }
 
-        if (record.ConsecutiveFailedAttempts >= 5) {
+        if (!record.IsEnabled) {
           res.status(403).send({
             ValidateResponseCode: {
               responseCode: RESPONSE_CODE_FAIL,
-              message: 'Account locked due to too many failed attempts',
+              message: 'El dispositivo no está activo',
               status: RESPONSE_STATUS_FAIL
             }
           })
@@ -83,13 +87,18 @@ export class TwoFactorAuth {
         }
 
         try {
+          console.log(`record.EncryptedSecret: ${record.EncryptedSecret}`)
           secretCodeVerify = advancedEncryptionService.decryptFromBuffer(
             record.EncryptedSecret
           )
+
+          console.log(`secretCodeVerify: ${secretCodeVerify}`)
         } catch (error) {
+          console.log(error)
           secretCodeVerify = advancedEncryptionService.decryptTwoFactorLegacy(
             record.EncryptedSecret
           )
+          console.log(`secretCodeVerifyyyyy: ${secretCodeVerify}`)
         }
       }
 
@@ -103,25 +112,17 @@ export class TwoFactorAuth {
           const encryptedSecret =
             advancedEncryptionService.encryptToBuffer(secretCodeVerify)
 
-          await insertedSecretCode2FA({
-            UserID: idUser,
+          await createNewDevice2FA({
+            Username: user,
             EncryptedSecret: encryptedSecret,
-            IsEnabled: 1,
-            ActivationDate: new Date(),
-            DeviceName: deviceName || 'Unknown Device',
-            CreatedDate: new Date(),
-            ModifiedDate: new Date()
+            DeviceName: deviceName || 'Dispositivo desconocido'
           })
-        }
-
-        if (redirectTo) {
-          await updatedUser(user, 'RedirectURL', '/cms/two-factor')
         }
 
         res.status(200).send({
           ValidateResponseCode: {
             responseCode: RESPONSE_CODE_SUCCESS,
-            message: RESPONSE_MESSAGE_SUCCESS,
+            message: 'ÉXITO',
             status: RESPONSE_STATUS_SUCCESS
           }
         })
@@ -129,17 +130,17 @@ export class TwoFactorAuth {
         res.status(400).send({
           ValidateResponseCode: {
             responseCode: RESPONSE_CODE_FAIL,
-            message: `${RESPONSE_MESSAGE_FAIL} CODE`,
+            message: 'CÓDIGO INVÁLIDO',
             status: RESPONSE_STATUS_FAIL
           }
         })
       }
     } catch (error) {
-      console.error('2FA Validation Error:', error)
+      console.error('Error de validación de 2FA:', error)
       res.status(500).send({
         ValidateResponseCode: {
           responseCode: RESPONSE_CODE_FAIL,
-          message: 'Internal Server Error during 2FA validation',
+          message: 'Error interno del servidor durante la validación de 2FA',
           status: RESPONSE_STATUS_FAIL
         }
       })

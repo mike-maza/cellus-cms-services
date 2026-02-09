@@ -8,10 +8,12 @@ import {
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
-  getRoles,
-  createRole,
-  updateRole,
-  getRolesWithDetails
+  db_getRoles,
+  db_createRole,
+  db_updateRole,
+  db_getRolesWithDetails,
+  db_disactivateRole,
+  db_asignRole
 } from '~/database/rolesDB'
 import { catchAsync } from '~/utils/catchAsync'
 
@@ -19,7 +21,7 @@ class RoleController {
   /**
    * Obtiene todos los roles
    */
-  public getRoles = catchAsync(async (req: Request, res: Response) => {
+  getRoles = catchAsync(async (req: Request, res: Response) => {
     const response = {
       responseCode: '',
       message: '',
@@ -27,7 +29,7 @@ class RoleController {
       data: []
     }
 
-    const roles = await getRoles()
+    const roles = await db_getRoles()
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -40,32 +42,7 @@ class RoleController {
   /**
    * Obtiene todos los roles con sus detalles
    */
-  public getRolesWithDetails = catchAsync(
-    async (req: Request, res: Response) => {
-      const response = {
-        responseCode: '',
-        message: '',
-        status: '',
-        data: []
-      }
-
-      console.log('aca')
-
-      const roles = await getRolesWithDetails()
-      response.responseCode = RESPONSE_CODE_SUCCESS
-      response.message = RESPONSE_MESSAGE_SUCCESS
-      response.status = RESPONSE_STATUS_SUCCESS
-      // @ts-ignore
-      response.data = roles
-
-      res.send({ getRolesWithDetailsResponse: response })
-    }
-  )
-
-  /**
-   * Crea un nuevo rol
-   */
-  public createRole = catchAsync(async (req: Request, res: Response) => {
+  getRolesWithDetails = catchAsync(async (req: Request, res: Response) => {
     const response = {
       responseCode: '',
       message: '',
@@ -73,7 +50,28 @@ class RoleController {
       data: []
     }
 
-    const result = await createRole(req.body)
+    const roles = await db_getRolesWithDetails()
+    response.responseCode = RESPONSE_CODE_SUCCESS
+    response.message = RESPONSE_MESSAGE_SUCCESS
+    response.status = RESPONSE_STATUS_SUCCESS
+    // @ts-ignore
+    response.data = roles
+
+    res.send({ getRolesWithDetailsResponse: response })
+  })
+
+  /**
+   * Crea un nuevo rol
+   */
+  createRole = catchAsync(async (req: Request, res: Response) => {
+    const response = {
+      responseCode: '',
+      message: '',
+      status: '',
+      data: []
+    }
+
+    const result = await db_createRole(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -86,7 +84,7 @@ class RoleController {
   /**
    * Actualiza un rol
    */
-  public updateRole = catchAsync(async (req: Request, res: Response) => {
+  updateRole = catchAsync(async (req: Request, res: Response) => {
     const response = {
       responseCode: '',
       message: '',
@@ -94,7 +92,7 @@ class RoleController {
       data: []
     }
 
-    const result = await updateRole(req.body)
+    const result = await db_updateRole(req.body)
     response.responseCode = RESPONSE_CODE_SUCCESS
     response.message = RESPONSE_MESSAGE_SUCCESS
     response.status = RESPONSE_STATUS_SUCCESS
@@ -102,6 +100,48 @@ class RoleController {
     response.data = result
 
     res.send({ updateRoleResponse: response })
+  })
+
+  asignRole = catchAsync(async (req: Request, res: Response) => {
+    const response = {
+      responseCode: '',
+      message: '',
+      status: '',
+      data: []
+    }
+
+    const { username, roleId, assignedByUsername } = req.body
+   
+
+    const result = await db_asignRole(username, roleId, assignedByUsername)
+    response.responseCode = RESPONSE_CODE_SUCCESS
+    response.message = RESPONSE_MESSAGE_SUCCESS
+    response.status = RESPONSE_STATUS_SUCCESS
+
+    response.data = result
+
+    res.send({ asignRoleResponse: response })
+  })
+
+  disactivateRole = catchAsync(async (req: Request, res: Response) => {
+    const response = {
+      responseCode: '',
+      message: '',
+      status: '',
+      data: []
+    }
+
+    const { username } = req.params
+    const { roleId } = req.body
+
+    const result = await db_disactivateRole(username as string, roleId)
+    response.responseCode = RESPONSE_CODE_SUCCESS
+    response.message = RESPONSE_MESSAGE_SUCCESS
+    response.status = RESPONSE_STATUS_SUCCESS
+    // @ts-ignore
+    response.data = result
+
+    res.send({ disactivateRoleResponse: response })
   })
 }
 

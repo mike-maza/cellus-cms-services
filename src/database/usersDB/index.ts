@@ -1,74 +1,14 @@
-import { executeStoredProcedure } from '~/database/connection'
+import {
+  executeStoredProcedure,
+  invalidateCachePattern
+} from '~/database/connection'
 import { PROCEDURES } from '../procedures'
-
-const usuarios = [
-  {
-    id: 'USR001',
-    Username: 'Admin Global',
-    FirstName: 'Admin',
-    LastName: 'Global',
-    Status: 'Activo',
-    Rol: 'Administrador',
-    Email: 'admin@empresa.com'
-    // rol: "Administrador",
-    // estado: "activo",
-    // fechaCreacion: "2023-01-01",
-  },
-  {
-    id: 'USR002',
-    Username: 'Gerente de Ventas',
-    FirstName: 'Gerente',
-    LastName: 'Ventas',
-    Status: 'Activo',
-    Rol: 'Gerente',
-    Email: 'ventas@empresa.com'
-    // rol: "Gerente",
-    // estado: "activo",
-    // fechaCreacion: "2023-01-10",
-  },
-  {
-    id: 'USR003',
-    Username: 'Contador Principal',
-    FirstName: 'Contador',
-    LastName: 'Principal',
-    Status: 'Inactivo',
-    Rol: 'Contador',
-    Email: 'contabilidad@empresa.com'
-    // rol: "Contador",
-    // estado: "inactivo",
-    // fechaCreacion: "2023-02-15",
-  },
-  {
-    id: 'USR004',
-    Username: 'Recursos Humanos',
-    FirstName: 'Recursos',
-    LastName: 'Humanos',
-    Status: 'Inactivo',
-    Rol: 'RRHH',
-    Email: 'rrhh@empresa.com'
-    // rol: "RRHH",
-    // estado: "activo",
-    // fechaCreacion: "2023-03-01",
-  },
-  {
-    id: 'USR005',
-    Username: 'Usuario Pendiente',
-    FirtsName: 'Usuario',
-    LastName: 'Pendiente',
-    Status: 'Activo',
-    Rol: 'Usuario',
-    Email: 'pendiente@empresa.com'
-    // rol: "Empleado",
-    // estado: "pendiente",
-    // fechaCreacion: "2023-04-20",
-  }
-]
 
 /**
  * Obtiene todos los usuarios
  * Usa caché de 5 minutos para reducir carga en el servidor
  */
-export const getAllUsers = async (): Promise<any[]> => {
+export const db_getAllUsers = async (): Promise<any[]> => {
   try {
     const users = await executeStoredProcedure<any[]>(PROCEDURES.GET_USERS, {
       useCache: true,
@@ -82,82 +22,92 @@ export const getAllUsers = async (): Promise<any[]> => {
   }
 }
 
-export const login = async (data: any) => {
+export const db_getPassword = async (data: any) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.LOGIN, data)
+    return await executeStoredProcedure(PROCEDURES.GET_PASSWORD, {
+      params: data
+    })
   } catch (error) {
     throw error
   }
 }
 
-export const getStepsUser = async (data: any) => {
+export const db_login = async (data: any) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.GET_STEPS_USER, data)
+    return await executeStoredProcedure(PROCEDURES.LOGIN, { params: data })
   } catch (error) {
     throw error
   }
 }
 
-export const validateAuthorizationCode = async (data: any) => {
+export const db_getStepsUser = async (data: any) => {
+  try {
+    return await executeStoredProcedure(PROCEDURES.GET_STEPS_USER, {
+      params: data
+    })
+  } catch (error) {
+    throw error
+  }
+}
+
+export const db_validateAuthorizationCode = async (data: any) => {
   try {
     return await executeStoredProcedure(
       PROCEDURES.VALIDATE_AUTHORIZATION_CODE,
-      data
+      { params: data }
     )
   } catch (error) {
     throw error
   }
 }
 
-export const getPassword = async (data: any) => {
+export const db_changePassword = async (data: any) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.GET_PASSWORD, data)
+    return await executeStoredProcedure(PROCEDURES.CHANGES_PASSWORD, {
+      params: data
+    })
   } catch (error) {
     throw error
   }
 }
 
-export const changePassword = async (data: any) => {
+export const db_createUser = async (data: any) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.CHANGES_PASSWORD, data)
+    const result = await executeStoredProcedure(PROCEDURES.CREATE_USER, {
+      params: data
+    })
+    invalidateCachePattern(PROCEDURES.GET_USERS)
+
+    return result
   } catch (error) {
     throw error
   }
 }
 
-export const getUserById = async (id: string) => {
+export const db_updateUser = async (data: any) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.GET_USER_BY_ID, { id })
+    const result = await executeStoredProcedure(PROCEDURES.UPDATE_USER, {
+      params: data
+    })
+
+    invalidateCachePattern(PROCEDURES.GET_USERS)
+    return result
   } catch (error) {
     throw error
   }
 }
 
-export const createUser = async (data: any) => {
+export const db_getProfile = async (username: string) => {
   try {
-    return await executeStoredProcedure(PROCEDURES.CREATE_USER, data)
+    return await executeStoredProcedure(PROCEDURES.GET_PROFILE, {
+      params: { username }
+    })
   } catch (error) {
     throw error
   }
 }
 
-export const updateUser = async (data: any) => {
-  try {
-    return await executeStoredProcedure(PROCEDURES.UPDATE_USER, data)
-  } catch (error) {
-    throw error
-  }
-}
-
-export const getProfile = async (id: string) => {
-  try {
-    return await executeStoredProcedure(PROCEDURES.GET_PROFILE, { id })
-  } catch (error) {
-    throw error
-  }
-}
-
-export const updateProfile = async (data: any) => {
+export const db_updateProfile = async (data: any) => {
   try {
     return await executeStoredProcedure(PROCEDURES.UPDATED_PROFILE, data)
   } catch (error) {
@@ -165,10 +115,129 @@ export const updateProfile = async (data: any) => {
   }
 }
 
-export const logout = async (data: any) => {
-  try {
-    return await executeStoredProcedure(PROCEDURES.LOGOUT, data)
-  } catch (error) {
-    throw error
+export const db_createSession = async (sessionData: {
+  username: string
+  deviceName: string
+  deviceType: string
+  browserName: string
+  browserVersion: string
+  os: string
+  userAgent: string
+  ipAddress: string
+  country?: string
+  countryCode?: string
+  region?: string
+  city?: string
+  sessionToken?: string
+}) => {
+  const result = await executeStoredProcedure(PROCEDURES.CREATE_SESSION, {
+    params: sessionData
+  })
+
+  return {
+    message: result.recordset[0]?.Mensaje,
+    sessionToken: result.output.sessionToken
   }
+}
+
+export const db_getActiveSessions = async (username: string) => {
+  const result = await executeStoredProcedure(PROCEDURES.GET_ACTIVE_SESSIONS, {
+    params: { username }
+  })
+
+  return result.recordset.map((device: any) => ({
+    ...device,
+    Location: `${device.City}, ${device.Country}`
+  }))
+}
+
+export const db_closeSession = async (sessionToken: string) => {
+  const result = await executeStoredProcedure(PROCEDURES.CLOSE_SESSION, {
+    params: { sessionToken }
+  })
+
+  return result.recordset[0]
+}
+
+export const db_closeAllSessions = async (codEmployee: string) => {
+  const result = await executeStoredProcedure(PROCEDURES.CLOSE_ALL_SESSIONS, {
+    params: { codEmployee }
+  })
+
+  return result.recordset[0]
+}
+
+export const db_logoutWithSession = async (
+  codEmployee: string,
+  sessionToken: string,
+  deviceInfo: {
+    deviceName: string
+    browserName: string
+  }
+) => {
+  // Primero verificar que la sesión existe y pertenece al usuario y dispositivo
+
+  const sessionCheck = await executeStoredProcedure(
+    PROCEDURES.GET_ACTIVE_SESSIONS,
+    {
+      params: { codEmployee }
+    }
+  )
+
+  const sessions = sessionCheck.recordset
+
+  // Buscar la sesión que coincida con el token y dispositivo
+  const matchingSession = sessions.find(
+    (session: any) =>
+      session.SessionToken === sessionToken &&
+      session.DeviceName === deviceInfo.deviceName &&
+      session.BrowserName === deviceInfo.browserName
+  )
+
+  if (!matchingSession) {
+    throw new Error(
+      'Sesión no encontrada o no coincide con el dispositivo actual'
+    )
+  }
+
+  // Si la sesión es válida, cerrarla
+  const result = await executeStoredProcedure(PROCEDURES.CLOSE_SESSION, {
+    params: { sessionToken }
+  })
+
+  return result.recordset[0]
+}
+
+export const db_closeDeviceSessions = async (
+  codEmployee: string,
+  deviceName: string,
+  browserName: string
+) => {
+  const result = await executeStoredProcedure(
+    PROCEDURES.CLOSE_DEVICE_SESSIONS,
+    {
+      params: { codEmployee, deviceName, browserName }
+    }
+  )
+
+  return result.recordset[0]
+}
+
+export const db_updateSessionActivity = async (sessionToken: string) => {
+  const result = await executeStoredProcedure(
+    PROCEDURES.UPDATE_SESSION_ACTIVITY,
+    {
+      params: { sessionToken }
+    }
+  )
+
+  return result.recordset[0]
+}
+
+export const db_getSessionHistory = async (codEmployee: string) => {
+  const result = await executeStoredProcedure(PROCEDURES.GET_SESSION_HISTORY, {
+    params: { codEmployee }
+  })
+
+  return result.recordset
 }

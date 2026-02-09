@@ -13,7 +13,7 @@ class EmployeeRoutes {
   routes() {
     this.router.get(
       '/get-employees',
-      // authMiddleware,
+      authMiddleware,
       employeeController.getEmployees
     )
     this.router.get(
@@ -31,6 +31,11 @@ class EmployeeRoutes {
       '/update-employee',
       authMiddleware,
       employeeController.updateEmployee
+    )
+    this.router.put(
+      '/update-employee/workflow',
+      authMiddleware,
+      employeeController.updateEmployeeWorkflow
     )
     this.router.put('/update-employee/reset-configuration/:id', authMiddleware)
   }

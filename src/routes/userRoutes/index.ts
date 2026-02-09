@@ -12,24 +12,9 @@ class UserRoutes {
   }
 
   routes() {
-    this.router.get(
-      '/get-users',
-      //  authMiddleware,
-      userController.getAllUsers
-    )
-    this.router.get('/get-user/:id', authMiddleware, userController.getUserById)
+    this.router.get('/get-users', authMiddleware, userController.getAllUsers)
     this.router.post('/create-user', authMiddleware, userController.createUser)
     this.router.put('/update-user', authMiddleware, userController.updateUser)
-    this.router.get(
-      '/get-profile/:id',
-      authMiddleware,
-      userController.getProfile
-    )
-    this.router.put(
-      '/update-profile',
-      authMiddleware,
-      userController.updateProfile
-    )
 
     // Rutas ahora manejadas por el controlador de credenciales
     this.router.put(
@@ -42,7 +27,7 @@ class UserRoutes {
       authMiddleware,
       credentialsController.changesPassword
     )
-    this.router.delete('/delete-user/:id', authMiddleware)
+
     this.router.post('/reset-password', authMiddleware)
   }
 }

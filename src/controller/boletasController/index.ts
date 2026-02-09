@@ -8,8 +8,8 @@ import {
   RESPONSE_STATUS_SUCCESS
 } from '~/constants/RESPONSE_MESSAGE'
 import {
-  insertOrUpdateBoletaDB,
-  getBoletoOrnatoData
+  db_insertOrUpdateBoleta,
+  db_getBoletoOrnatoData
 } from '~/database/boletasDB'
 import { catchAsync } from '~/utils/catchAsync'
 
@@ -29,7 +29,7 @@ class BoletasController {
         data: []
       }
 
-      const result = await insertOrUpdateBoletaDB(req.body)
+      const result = await db_insertOrUpdateBoleta(req.body)
       response.responseCode = RESPONSE_CODE_SUCCESS
       response.message = RESPONSE_MESSAGE_SUCCESS
       response.status = RESPONSE_STATUS_SUCCESS
@@ -52,7 +52,7 @@ class BoletasController {
         data: []
       }
 
-      const data = await getBoletoOrnatoData()
+      const data = await db_getBoletoOrnatoData()
       response.responseCode = RESPONSE_CODE_SUCCESS
       response.message = RESPONSE_MESSAGE_SUCCESS
       response.status = RESPONSE_STATUS_SUCCESS

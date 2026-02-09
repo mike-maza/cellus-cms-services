@@ -1,37 +1,40 @@
 import { executeStoredProcedure } from './connection'
 import { PROCEDURES } from './procedures'
 
-export const getPayments = async (params?: {
+export const db_getPayments = async (params?: {
   YearMonths?: string | undefined
   PageNumber?: number | undefined
   PageSize?: number | undefined
 }) => {
   try {
-    const payments = await executeStoredProcedure<any[]>(
-      PROCEDURES.GET_PAYMENTS,
-      {
+    const [metadata, payments] = await Promise.all([
+      executeStoredProcedure(PROCEDURES.GET_PAYMENTS_METADATA),
+      executeStoredProcedure(PROCEDURES.GET_PAYMENTS, {
         ...(params ? { params } : {}),
         useCache: true,
         cacheTTL: 5 * 60 * 1000 // 5 minutos de caché
-      }
-    )
+      })
+    ])
 
-    return payments.map(ticket => ({
-      ...ticket,
-      Signature: ticket.Signature ? ticket.Signature : false,
-      bufferImage: ticket.bufferImage
-        ? ticket.bufferImage.toString('base64')
-        : '',
-      SendDate: ticket.SendDate ? 'Enviada' : '',
-      Boleta: ticket.Email.length > 5 ? 'Digital' : 'Fisica'
-    }))
+    return {
+      ...metadata[0],
+      Payments: payments.map((ticket: any) => ({
+        ...ticket,
+        Signature: ticket.Signature ? ticket.Signature : false,
+        bufferImage: ticket.bufferImage
+          ? ticket.bufferImage.toString('base64')
+          : '',
+        SendDate: ticket.SendDate ? 'Enviada' : '',
+        Boleta: ticket.Email.length > 5 ? 'Digital' : 'Fisica'
+      }))
+    }
   } catch (err) {
     console.error(err)
     throw err
   }
 }
 
-export const getPaymentByUiAuthorizationDB = async (params: {
+export const db_getPaymentByUiAuthorization = async (params: {
   CodEmployee: string
   UiAuthorization: string
 }) => {
@@ -57,7 +60,7 @@ export const getPaymentByUiAuthorizationDB = async (params: {
   }
 }
 
-export const signPaymentOnBehalfDB = async (params: {
+export const db_signPaymentOnBehalf = async (params: {
   CodEmployee: string
   UiAuthorization: string
   SignedBy: string

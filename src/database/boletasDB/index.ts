@@ -1,11 +1,11 @@
+import { PROCEDURES } from '~/database/procedures'
 import {
-  getConnection2 as getConnection,
-  executeStoredProcedure
+  executeStoredProcedure,
+  invalidateCachePattern
 } from '~/database/connection'
 import { BITACORA_TICKETS } from '~/types'
-import { PROCEDURES } from '../procedures'
 
-export const insertOrUpdateBoletaDB = async (boleta: BITACORA_TICKETS) => {
+export const db_insertOrUpdateBoleta = async (boleta: BITACORA_TICKETS) => {
   try {
     const {
       CodEmployee,
@@ -35,19 +35,19 @@ export const insertOrUpdateBoletaDB = async (boleta: BITACORA_TICKETS) => {
       deducciones
     } = boleta
 
-    const pool = await getConnection()
-
     // Verificar si el pago ya existe en la base de datos
-    const verificarPago = await pool
-      ?.request()
-      .input('codEmployee', CodEmployee)
-      .input('sheetName', SheetName)
-      .execute('sp_VerifyPayment') // Stored procedure para verificar si existe el pago
+    const verificarPago = await executeStoredProcedure<any[]>(
+      PROCEDURES.VERIFY_PAYMENT_EXISTS,
+      {
+        params: {
+          CodEmployee: CodEmployee,
+          SheetName: SheetName
+        }
+      }
+    )
 
     // Si el pago ya existe, no hacer nada
-    if (verificarPago && verificarPago.recordset?.length > 0) {
-      console.log('Pago ya existe en la base de datos')
-
+    if (verificarPago && verificarPago.length > 0) {
       return {
         success: true,
         status: 'existing'
@@ -55,56 +55,77 @@ export const insertOrUpdateBoletaDB = async (boleta: BITACORA_TICKETS) => {
     }
 
     // Insertar la boleta principal
-    const boletaPromise = await pool
-      ?.request()
-      .input('CodEmployee', CodEmployee)
-      .input('FullName', FullName)
-      .input('SheetName', SheetName)
-      .input('NoBoleta', NoBoleta)
-      .input('PaymentIndicator', PaymentIndicator)
-      .input('PayDay', PayDay)
-      .input('UiAuthorization', UiAuthorization)
-      .input('Comments', Comments)
-      .input('BiweeklyAdvance', BiweeklyAdvance)
-      .input('TotalOvertime', TotalOvertime)
-      .input('Bonus', Bonus)
-      .input('Bonus79', Bonus79)
-      .input('TotalBiweeklyToPay', TotalBiweeklyToPay)
-      .input('TotalDeductions', TotalDeductions)
-      .input('Total', Total)
-      .input('AmountDays', AmountDays)
-      .input('dayNum', DAY)
-      .input('monthNum', MONTH)
-      .input('yearNum', YEAR)
-      .input('Bonus14', Bonus14)
-      .input('BonusDecember', BonusDecember)
-      .input('Accreditation1', Accreditation1)
-      .input('Accreditation2', Accreditation2)
-      .input('UserWhoCreates', UserWhoCreates)
-      .execute('sp_CreatedPayment')
+    await executeStoredProcedure(PROCEDURES.CREATED_PAYMENT, {
+      params: {
+        CodEmployee,
+        FullName,
+        SheetName,
+        NoBoleta,
+        PaymentIndicator,
+        PayDay,
+        UiAuthorization,
+        Comments,
+        BiweeklyAdvance,
+        TotalOvertime,
+        Bonus,
+        Bonus79,
+        TotalBiweeklyToPay,
+        TotalDeductions,
+        Total,
+        AmountDays,
+        DayNum: DAY,
+        MonthNum: MONTH,
+        YearNum: YEAR,
+        Bonus14,
+        BonusDecember,
+        Accreditation1,
+        Accreditation2,
+        UserWhoCreates
+      }
+    })
 
     const deduccionesPromises = deducciones?.map((deduccion: any) => {
-      return pool
-        .request()
-        .input('uiAuthorization', UiAuthorization)
-        .input('CodEmployee', CodEmployee)
-        .input('typeDeduction', deduccion.tipo)
-        .input('amount', deduccion.monto)
-        .input('observations', deduccion.observaciones)
-        .execute('sp_CreatedPaymentDeductions') // Tu stored procedure para deducciones
+      return executeStoredProcedure(PROCEDURES.CREATED_PAYMENT_DEDUCTIONS, {
+        params: {
+          UiAuthorization,
+          CodEmployee,
+          TypeDeduction: deduccion.tipo,
+          Amount: deduccion.monto,
+          Observations: deduccion.observaciones,
+          CreatedBy: UserWhoCreates
+        }
+      })
     })
 
     // Ejecutar todo en paralelo
-    await Promise.all([deduccionesPromises])
+    if (deduccionesPromises) {
+      await Promise.all(deduccionesPromises)
+    }
 
-    console.log('Boleta y deducciones insertadas exitosamente')
+    // Invalidar caché tras la creación exitosa
+    invalidateCachePattern(PROCEDURES.GET_PAYMENTS)
+    invalidateCachePattern(PROCEDURES.GET_PAYMENTS_METADATA)
+    // invalidateCachePattern(PROCEDURES.DASHBOARD_PAYMENTS_DATA)
+
     return { success: true, status: 'created' }
   } catch (error) {
     console.error('Error al insertar o actualizar la boleta:', error)
   }
 }
 
-export const getBoletoOrnatoData = async () => {
+export const db_getPayments = async (params?: any) => {
+  try {
+    return await executeStoredProcedure(PROCEDURES.GET_PAYMENTS, {
+      useCache: true,
+      cacheTTL: 5 * 60 * 1000, // 5 minutos
+      params
+    })
+  } catch (error) {
+    throw error
+  }
+}
+
+export const db_getBoletoOrnatoData = async () => {
   try {
     // return await executeStoredProcedure(PROCEDURES.GET_BOLETO_ORNATO_DATA)
     return 'hola'

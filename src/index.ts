@@ -33,9 +33,14 @@ import dynamicRoutes from '~/routes/dynamicRoutes'
 import vacationRoutes from '~/routes/vacationRoutes'
 import advanceRoutes from '~/routes/advanceRoutes'
 import calendarRoutes from '~/routes/calendarRoutes'
+import googleSheetsRoutes from '~/routes/googleSheetsRoutes'
+import dashboardRoutes from '~/routes/dashboardRoutes'
+import gcsRoutes from '~/routes/gcsRoutes'
 
 import { googleSheetsPayments } from '~/utils/googleSheet'
 import { sendBoletaEmail, sendWelcomeEmail } from './utils/emailSender'
+import { advancedEncryptionService } from './config/encryption'
+import { TwoFactorAuth } from '~/utils/2FA'
 
 class Services {
   public app: Application
@@ -144,6 +149,34 @@ class Services {
   private async initializeRoutes() {
     // Configurar rutas de autenticación
     // this.app.use(`${this.urlBase}/auth`, authRoutes);
+    const encryptedMIO =
+      advancedEncryptionService.encryptToBuffer('LZIWVAO7BJBEVR3L')
+    const encryptedRODRIGO =
+      advancedEncryptionService.encryptToBuffer('VQZMN5JFKOUJNKJM')
+    const encryptedMAJU =
+      advancedEncryptionService.encryptToBuffer('QG4O5QGOAT2IRWGE')
+    console.log('======== MIO ========')
+    console.log(encryptedMIO)
+    console.log('======== RODRIGO ========')
+    console.log(encryptedRODRIGO)
+    console.log('======== MAJU ========')
+    console.log(encryptedMAJU)
+    console.log('======== DECRYPTED ========')
+    console.log(
+      `MIO: ${advancedEncryptionService.decryptFromBuffer(encryptedMIO)}`
+    )
+    console.log(
+      `RODRIGO: ${advancedEncryptionService.decryptFromBuffer(encryptedRODRIGO)}`
+    )
+    console.log(
+      `MAJU: ${advancedEncryptionService.decryptFromBuffer(encryptedMAJU)}`
+    )
+
+    /**
+     * MIO: LZIWVAO7BJBEVR3L
+     * RODRIGO: VQZMN5JFKOUJNKJM
+     * MAJU: QG4O5QGOAT2IRWGE
+     */
 
     // Ruta raíz
     this.app.get('/', (req, res) => {
@@ -178,6 +211,12 @@ class Services {
     this.app.use(`${this.urlBase}/payments`, paymentsRoutes as any)
     this.app.use(`${this.urlBase}/permissions`, permissionRoutes as any)
     this.app.use(`${this.urlBase}/roles`, rolesRoutes as any)
+    this.app.use(`${this.urlBase}/steps`, stepsRoutes as any)
+    this.app.use(`${this.urlBase}/credentials`, credentialsRoutes as any)
+    this.app.use(`${this.urlBase}/two-factor`, twoFactorRoutes as any)
+    this.app.use(`${this.urlBase}/google-sheets`, googleSheetsRoutes as any)
+    this.app.use(`${this.urlBase}/dashboard`, dashboardRoutes as any)
+    this.app.use(`${this.urlBase}/gcs`, gcsRoutes as any)
 
     // Dynamic Company Routes
     this.app.use(`${this.urlBase}/dynamic`, dynamicRoutes as any)
