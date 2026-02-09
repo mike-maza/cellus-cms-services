@@ -1,0 +1,6 @@
+export const RESPONSE_CODE_FAIL = '0'
+export const RESPONSE_CODE_SUCCESS = '1'
+export const RESPONSE_STATUS_FAIL = 'FAIL'
+export const RESPONSE_STATUS_SUCCESS = 'SUCCESS'
+export const RESPONSE_MESSAGE_FAIL = 'FAIL'
+export const RESPONSE_MESSAGE_SUCCESS = 'SUCCESS'

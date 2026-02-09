@@ -86,9 +86,18 @@
 
       /* Estilos para dispositivos móviles */
       @media screen and (max-width: 600px) {
+        /* Contenedor principal */
         .email-container {
           width: 100% !important;
         }
+        
+        .container {
+          width: 100% !important;
+          max-width: 100% !important;
+          border-radius: 0 !important;
+        }
+        
+        /* Columnas apilables */
         .stack-column,
         .stack-column-center {
           display: block !important;
@@ -96,14 +105,51 @@
           max-width: 100% !important;
           direction: ltr !important;
         }
+        
         .stack-column-center {
           text-align: center !important;
         }
+        
         .center-on-mobile {
           text-align: center !important;
           display: block !important;
           margin-left: auto !important;
           margin-right: auto !important;
+        }
+        
+        /* Ajustes de padding para móvil */
+        .mobile-padding {
+          padding: 15px !important;
+        }
+        
+        /* Títulos y texto */
+        h1 {
+          font-size: 20px !important;
+          line-height: 28px !important;
+        }
+        
+        h2 {
+          font-size: 16px !important;
+          line-height: 22px !important;
+        }
+        
+        p {
+          font-size: 14px !important;
+          line-height: 20px !important;
+        }
+        
+        /* Tablas de contenido */
+        table[role="presentation"] {
+          width: 100% !important;
+        }
+        
+        /* Reducir padding en celdas */
+        td[style*="padding: 20px 30px"] {
+          padding: 15px 20px !important;
+        }
+        
+        td[style*="padding: 25px 30px"] {
+          padding: 20px 15px !important;
         }
       }
     </style>
